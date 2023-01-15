@@ -219,6 +219,9 @@ class Node():
         elif (self.name == LISTA_IZRAZA_PRIDRUZIVANJA):
             output = self.lista_izraza_pridruzivanja()
 
+        elif (self.name == UNARNI_OPERATOR):
+            output = self.unarni_operator()
+
         return output
     
 
@@ -232,7 +235,7 @@ class Node():
             self.l_izraz = self.scope_structure.l_izraz_of_idn_in_scope(self.children[0].lex)
 
             if self.scope_structure.idn_name_not_in_local_scopes(self.children[0].lex):
-                return f"\t\tLOADW R6, G_{(self.children[0].lex).upper()}\n"
+                return f"\t\tLOAD R6, (G_{(self.children[0].lex).upper()})\n"
             else:
                 ...
 
@@ -393,11 +396,15 @@ class Node():
             self.l_izraz = 0
 
         elif self.right_side(UNARNI_OPERATOR, CAST_IZRAZ):
-            error = self.children[1].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[1].tip, INT):
-                return self.error()
+            output = self.children[1].generate_output()
+            output += self.children[0].generate_output()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[1].tip, INT):
+            #     return self.error()
+            # if self.children[0].name == MINUS:
+            #     output += "\t\tXOR R6, -1, R6\n"
+            #     output += "\t\tADD R6, 1, R6\n"
             self.tip = INT
             self.l_izraz = 0
         return output
@@ -406,7 +413,13 @@ class Node():
     # <unarni_operator>
     def unarni_operator(self):
         # nothing needs to be checked here
-        return ""
+        output = ""
+        if self.children[0].name == MINUS:
+            output += "\t\tXOR R6, -1, R6\n"
+            output += "\t\tADD R6, 1, R6\n"
+        if self.children[0].name == OP_TILDA:
+            output += "\t\tXOR R6, -1, R6\n"
+        return output
     
 
     # <cast_izraz>
@@ -503,7 +516,11 @@ class Node():
             output += "\t\tMOVE R6, R1\n"
             output += self.children[2].generate_output()
             output += "\t\tMOVE R6, R2\n"
-            output += "\t\tADD R1, R2, R6\n"
+
+            if self.right_side(ADITIVNI_IZRAZ, PLUS, MULTIPLIKATIVNI_IZRAZ):
+                output += "\t\tADD R1, R2, R6\n"
+            else:
+                output += "\t\tSUB R1, R2, R6\n"
         return output
     
 
@@ -563,16 +580,20 @@ class Node():
             # self.l_izraz = self.children[0].l_izraz
         
         elif self.right_side(BIN_I_IZRAZ, OP_BIN_I, JEDNAKOSNI_IZRAZ):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[0].tip, INT):
-                return self.error()
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[2].tip, INT):
-                return self.error()
+
+            output = self.children[0].generate_output()
+            output += "\t\tMOVE R6, R1\n"
+            output += self.children[2].generate_output()
+            output += "\t\tMOVE R6, R2\n"
+            output += "\t\tAND R1, R2, R6\n"
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[0].tip, INT):
+            #     return self.error()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[2].tip, INT):
+            #     return self.error()
             self.tip = INT
             self.l_izraz = 0
         return output
@@ -611,10 +632,10 @@ class Node():
             if not implicit_cast(self.children[0].tip, INT):
                 return self.error()
             error = self.children[2].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[2].tip, INT):
-                return self.error()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[2].tip, INT):
+            #     return self.error()
             self.tip = INT
             self.l_izraz = 0
         return output
@@ -647,16 +668,21 @@ class Node():
             output = self.children[0].generate_output()
         
         elif self.right_side(LOG_ILI_IZRAZ, OP_ILI, LOG_I_IZRAZ):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[0].tip, INT):
-                return self.error()
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[2].tip, INT):
-                return self.error()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[0].tip, INT):
+            #     return self.error()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[2].tip, INT):
+            #     return self.error()
+
+            output = self.children[0].generate_output()
+            output += "\t\tMOVE R6, R1\n"
+            output += self.children[2].generate_output()
+            output += "\t\tMOVE R6, R2\n"
+            output += "\t\OR R1, R2, R6\n"
+
             self.tip = INT
             self.l_izraz = 0
         return output

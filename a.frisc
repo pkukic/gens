@@ -3,7 +3,7 @@
 		HALT
 
 F_MAIN
-		LOAD R6, (K_0)
+		LOAD R6, (G_Z)
 		RET
 
-K_0		DW %D 1234567890
+		DW %D 1

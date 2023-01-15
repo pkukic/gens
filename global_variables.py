@@ -11,5 +11,5 @@ class GlobalVariables:
         return len(self.body)
     
     def print(self):
-        output_string = '\n'.join(self.body)
+        output_string = '\n'.join(self.body) + '\n'
         return output_string
