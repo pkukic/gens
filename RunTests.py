@@ -7,7 +7,7 @@ subdirs = [os.path.abspath(f) for f in subdirs]
 subdirs = sorted(subdirs)
 
 temp_file_name = os.path.join(os.getcwd(), 'out.txt')
-frisc_file_name = os.path.join(os.getcwd(), 'a.frisc')
+# frisc_file_name = os.path.join(os.getcwd(), 'a.frisc')
 
 N = 80
 n_total_tests = 0
@@ -32,9 +32,9 @@ for dir in subdirs:
         print("-"*N)
 
         temp_file = open(temp_file_name, 'w+')
-        frisc_file = open(frisc_file_name, "w+")
+        # frisc_file = open(frisc_file_name, "w+")
 
-        subprocess.run([f"cat {in_file_name} | python3 GeneratorKoda.py"], shell=True, stdout=frisc_file)
+        subprocess.run([f"cat {in_file_name} | python3 GeneratorKoda.py"], shell=True, stdout=subprocess.DEVNULL)
         subprocess.run([f"cat a.frisc | node main.js"], shell=True, stdout=temp_file, stderr=subprocess.DEVNULL)
 
         with open(temp_file_name, 'r') as output:

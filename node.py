@@ -225,14 +225,23 @@ class Node():
     # <primarni_izraz>
     def primarni_izraz(self):
         if self.right_side(IDN):
-            if not self.scope_structure.idn_name_in_scope(self.children[0].lex):
-                return self.error()
+            # if not self.scope_structure.idn_name_in_scope(self.children[0].lex):
+            #     return self.error()
 
             self.tip = self.scope_structure.type_of_idn_in_scope(self.children[0].lex)
             self.l_izraz = self.scope_structure.l_izraz_of_idn_in_scope(self.children[0].lex)
 
+            if self.scope_structure.idn_name_not_in_local_scopes(self.children[0].lex):
+                return f"\t\tLOADW R6, G_{(self.children[0].lex).upper()}\n"
+            else:
+                ...
+
         elif self.right_side(BROJ):
-            return "%D " + self.children[0].lex
+            if self.scope_structure.current_scope.scope_type == GLOBAL:
+                return "%D " + self.children[0].lex
+            else:
+                self.global_variables.add_line(f"K_{self.global_variables.size()}\t\t%D {self.children[0].lex}\n")
+                return f"\t\tLOADW R6, K_{self.global_variables.size() - 1}\n"
             
         elif self.right_side(ZNAK):
             if not check_char(self.children[0].lex):    
@@ -478,18 +487,23 @@ class Node():
 
         elif (self.right_side(ADITIVNI_IZRAZ, PLUS, MULTIPLIKATIVNI_IZRAZ) or 
                 self.right_side(ADITIVNI_IZRAZ, MINUS, MULTIPLIKATIVNI_IZRAZ)):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[0].tip, INT):
-                return self.error()
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[2].tip, INT):
-                return self.error()
+            # error = self.children[0].generate_output()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[0].tip, INT):
+            #     return self.error()
+            # error = self.children[2].generate_output()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[2].tip, INT):
+            #     return self.error()
             self.tip = INT
             self.l_izraz = 0
+            output = self.children[0].generate_output()
+            output += "\t\tMOVE R6, R1\n"
+            output += self.children[2].generate_output()
+            output += "\t\tMOVE R6, R2\n"
+            output += "\t\tADD R1, R2, R6\n"
         return output
     
 
@@ -817,8 +831,7 @@ class Node():
         #     if self.nesting_function_type() != VOID:
         #         return self.error()
         if self.right_side(KR_RETURN, IZRAZ, TOCKAZAREZ):
-            output = "\t\tMOVE " + self.children[1].generate_output() + ", R6\n"
-            # output = "MOVE " + izraz_output + ", R6"
+            output = self.children[1].generate_output()
             output = output + "\t\tRET\n"
         return output
 
@@ -986,8 +999,8 @@ class Node():
         return ""
     
     def lista_init_deklaratora(self, ntip):
-        if ntip is None:
-            return self.error()
+        # if ntip is None:
+        #     return self.error()
         self.ntip = ntip
         current_ntip = self.ntip
         if self.right_side(INIT_DEKLARATOR):
@@ -1002,24 +1015,32 @@ class Node():
         return ""
     
     def init_deklarator(self, ntip):
-        if ntip is None:
-            return self.error()
+        # if ntip is None:
+        #     return self.error()
         self.ntip = ntip
         current_ntip = self.ntip
         if self.right_side(IZRAVNI_DEKLARATOR):
-            error = self.children[0].generate_output(ntip=current_ntip)
-            if error:
-                return error
-            if is_const_x(self.children[0].tip):
-                return self.error()
-            if is_niz_x(self.children[0].tip):
-                if is_const_x(remove_niz_from_niz_x(self.children[0].tip)):
-                    return self.error()
+            output = self.children[0].generate_output(ntip=current_ntip)
+            # if error:
+            #     return error
+            # if is_const_x(self.children[0].tip):
+            #     return self.error()
+            # if is_niz_x(self.children[0].tip):
+            #     if is_const_x(remove_niz_from_niz_x(self.children[0].tip)):
+            #         return self.error()
         elif self.right_side(IZRAVNI_DEKLARATOR, OP_PRIDRUZI, INICIJALIZATOR):
             if self.scope_structure.current_scope.scope_type == GLOBAL:
-                name = self.children[0].generate_output()
+                name = self.children[0].generate_output(ntip=current_ntip)
                 value = self.children[2].generate_output()
-                self.global_variables.add_line(name + "\t" + "DW" + value)
+                if len(name) < 4:
+                    tabs = "\t\t"
+                else:
+                    tabs = "\t"
+                if self.ntip == INT:
+                    type_to_save = "DW"
+                else:
+                    type_to_Save = "DH"
+                self.global_variables.add_line(name + tabs + type_to_save + " " + value)
             else:
                 ...
             # error = self.children[0].generate_output(ntip=current_ntip)
@@ -1113,10 +1134,7 @@ class Node():
             #     self.tipovi = [CHAR] * self.br_elem
             # else:
             #     self.tip = self.children[0].tip
-            if self.scope_structure.current_scope.scope_type == GLOBAL:
-                return self.children[0].generate_output()
-            else:
-                ...
+            return self.children[0].generate_output()
         elif self.right_side(L_VIT_ZAGRADA, LISTA_IZRAZA_PRIDRUZIVANJA, D_VIT_ZAGRADA):
             error = self.children[1].generate_output()
             if error: 

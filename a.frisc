@@ -3,6 +3,7 @@
 		HALT
 
 F_MAIN
-		MOVE %D 31, R6
+		LOADW R6, K_0
 		RET
 
+K_0		%D 1234567890

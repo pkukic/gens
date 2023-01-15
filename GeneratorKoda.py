@@ -13,9 +13,9 @@ INPUT_FILE_PATH = "/home/filip/Work/FER/5_semestar/ppj/labosi/gens/testovi/01_re
 
 
 def main():
-    with open(INPUT_FILE_PATH, 'r') as file:
-        input = [line.rstrip() for line in file.readlines()]
-    # input = [line.rstrip() for line in sys.stdin.readlines()]
+    # with open(INPUT_FILE_PATH, 'r') as file:
+    #     input = [line.rstrip() for line in file.readlines()]
+    input = [line.rstrip() for line in sys.stdin.readlines()]
     # make the generative tree from the input
     functions = Functions()
     global_variables = GlobalVariables()
