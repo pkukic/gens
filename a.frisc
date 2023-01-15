@@ -3,6 +3,6 @@
 		HALT
 
 F_MAIN
-		MOVE %D 1234567890, R6
+		MOVE %D 31, R6
 		RET
 
