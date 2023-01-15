@@ -419,6 +419,8 @@ class Node():
             output += "\t\tADD R6, 1, R6\n"
         if self.children[0].name == OP_TILDA:
             output += "\t\tXOR R6, -1, R6\n"
+        if self.children[0].name == OP_NEG:
+            output += "\t\tXOR R6, 1, R6\n"
         return output
     
 
