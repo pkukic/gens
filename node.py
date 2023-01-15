@@ -555,16 +555,26 @@ class Node():
         
         elif (self.right_side(JEDNAKOSNI_IZRAZ, OP_EQ, ODNOSNI_IZRAZ) or
                 self.right_side(JEDNAKOSNI_IZRAZ, OP_NEQ, ODNOSNI_IZRAZ)):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[0].tip, INT):
-                return self.error()
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[2].tip, INT):
-                return self.error()
+
+            output = self.children[0].generate_output()
+            output += "\t\tMOVE R6, R1\n"
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[0].tip, INT):
+            #     return self.error()
+            output += self.children[2].generate_output()
+            output += "\t\tMOVE R6, R2\n"
+
+            output += "\t\tXOR R1, R2, R6\n"
+            output += "\t\tAND R6, 1, R6\n"
+
+            if self.right_side(JEDNAKOSNI_IZRAZ, OP_EQ, ODNOSNI_IZRAZ):
+                output += "\t\tXOR R6, 1, R6\n"
+
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[2].tip, INT):
+            #     return self.error()
             self.tip = INT
             self.l_izraz = 0
         return output
@@ -605,16 +615,22 @@ class Node():
             output = self.children[0].generate_output()
         
         elif self.right_side(BIN_XILI_IZRAZ, OP_BIN_XILI, BIN_I_IZRAZ):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[0].tip, INT):
-                return self.error()
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[2].tip, INT):
-                return self.error()
+            output = self.children[0].generate_output()
+            output += "\t\tMOVE R6, R1\n"
+            output += self.children[2].generate_output()
+            output += "\t\tMOVE R6, R2\n"
+            output += "\t\tOR R1, R2, R6\n"
+
+            # error = self.children[0].generate_output()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[0].tip, INT):
+            #     return self.error()
+            # error = self.children[2].generate_output()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[2].tip, INT):
+            #     return self.error()
             self.tip = INT
             self.l_izraz = 0
         return output
@@ -626,12 +642,18 @@ class Node():
             output = self.children[0].generate_output()
         
         elif self.right_side(BIN_ILI_IZRAZ, OP_BIN_ILI, BIN_XILI_IZRAZ):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[0].tip, INT):
-                return self.error()
-            error = self.children[2].generate_output()
+            output = self.children[0].generate_output()
+            output += "\t\tMOVE R6, R1\n"
+            output += self.children[2].generate_output()
+            output += "\t\tMOVE R6, R2\n"
+            output += "\t\tOR R1, R2, R6\n"
+
+            # error = self.children[0].generate_output()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[0].tip, INT):
+            #     return self.error()
+            # error = self.children[2].generate_output()
             # if error:
             #     return error
             # if not implicit_cast(self.children[2].tip, INT):
