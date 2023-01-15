@@ -240,8 +240,8 @@ class Node():
             if self.scope_structure.current_scope.scope_type == GLOBAL:
                 return "%D " + self.children[0].lex
             else:
-                self.global_variables.add_line(f"K_{self.global_variables.size()}\t\t%D {self.children[0].lex}\n")
-                return f"\t\tLOADW R6, K_{self.global_variables.size() - 1}\n"
+                self.global_variables.add_line(f"K_{self.global_variables.size()}\t\tDW %D {self.children[0].lex}\n")
+                return f"\t\tLOAD R6, (K_{self.global_variables.size() - 1})\n"
             
         elif self.right_side(ZNAK):
             if not check_char(self.children[0].lex):    
