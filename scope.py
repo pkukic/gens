@@ -9,9 +9,10 @@ class Scope():
     function_values = []
     scope_type = None
 
-    def __init__(self, parent_scope, scope_type):
+    def __init__(self, parent_scope, scope_type, stack_position=None):
         self.parent_scope = parent_scope
         self.child_scope = None
+        self.stack_position = stack_position
         self.declarations = {}
         self.definitions = {}
         self.idn_values = []
@@ -56,6 +57,14 @@ class Scope():
         if self.parent_scope:
             return self.parent_scope.idn_name_in_scope(name)
         return False
+    
+    def scope_containing_name(self, name: str):
+        for value in self.idn_values:
+            if value == name:
+                return self
+        if self.parent_scope:
+            return self.parent_scope.scope_containing_name(name)
+        return None
     
     def idn_name_in_local_scope(self, name: str):
         for value in self.idn_values:
@@ -106,6 +115,12 @@ class Scope():
             self.children_function_declarations[idn] = type
             return
         self.parent_scope.add_child_function_declaration(idn, type)
+    
+    def get_stack_offset(self):
+        return len(self.idn_values) * 4
+    
+    def get_variable_offset(self, name: str):
+        return (self.idn_values.index(name) + 1) * 4
 
     def global_scope(self):
         if self.scope_type == GLOBAL:

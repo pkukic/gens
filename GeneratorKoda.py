@@ -8,7 +8,7 @@ from global_variables import GlobalVariables
 import sys
 
 
-INPUT_FILE_PATH = "./testovi/21_unarni_minus_mali/test.in"
+INPUT_FILE_PATH = "./testovi/04_35_params/test.in"
 # INPUT_FILE_PATH = "/home/filip/Work/FER/5_semestar/ppj/labosi/sem/temp.txt"
 
 

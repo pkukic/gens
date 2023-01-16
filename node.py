@@ -86,6 +86,14 @@ class Node():
         return True
 
 
+    def is_argument(self):
+        if not self.parent_node:
+            return False
+        if self.parent_node.name == LISTA_ARGUMENATA:
+            return True
+        return self.parent_node.is_argument()
+
+
     def in_loop(self):
         p = self.parent_node
         allowed_parents = [
@@ -179,7 +187,9 @@ class Node():
             output = self.izraz()
 
         elif (self.name == SLOZENA_NAREDBA):
-            output = self.slozena_naredba(scope=scope)
+            output = self.slozena_naredba(scope=scope, 
+                                            lista_identifikatora=lista_identifikatora, 
+                                            lista_tipova=lista_tipova)
         elif (self.name == LISTA_NAREDBI):
             output = self.lista_naredbi()
         elif (self.name == NAREDBA):
@@ -228,22 +238,41 @@ class Node():
     # <primarni_izraz>
     def primarni_izraz(self):
         if self.right_side(IDN):
+            # TODO
+            # if self.is_argument():
+            #     ...
+
             # if not self.scope_structure.idn_name_in_scope(self.children[0].lex):
             #     return self.error()
 
             self.tip = self.scope_structure.type_of_idn_in_scope(self.children[0].lex)
             self.l_izraz = self.scope_structure.l_izraz_of_idn_in_scope(self.children[0].lex)
 
+            if isinstance(self.tip, FunctionType):
+                if self.tip.arguments_types == [VOID]:
+                    return f"\t\tCALL F_{self.children[0].lex.upper()}\n"
+                else:
+                    return f" F_{self.children[0].lex.upper()}"
+
             if self.scope_structure.idn_name_not_in_local_scopes(self.children[0].lex):
                 return f"\t\tLOAD R6, (G_{(self.children[0].lex).upper()})\n"
             else:
-                ...
+                scope_container = self.scope_structure.return_scope_containg_name(self.children[0].lex)
+                stack_offset = scope_container.get_variable_offset(self.children[0].lex)
+                return f"\t\tLOAD R6, (R7+{stack_offset})\n"
 
         elif self.right_side(BROJ):
+            if self.is_argument():
+                self.global_variables.add_line(f"K_{self.global_variables.size()}\t\tDW %D {self.children[0].lex}")
+                output = f"\t\tLOAD R6, (K_{self.global_variables.size() - 1})\n"
+                output += f"\t\tPUSH R6\n"
+                return output
+            self.tip = BROJ
+            self.l_izraz = 0
             if self.scope_structure.current_scope.scope_type == GLOBAL:
                 return "%D " + self.children[0].lex
             else:
-                self.global_variables.add_line(f"K_{self.global_variables.size()}\t\tDW %D {self.children[0].lex}\n")
+                self.global_variables.add_line(f"K_{self.global_variables.size()}\t\tDW %D {self.children[0].lex}")
                 return f"\t\tLOAD R6, (K_{self.global_variables.size() - 1})\n"
             
         elif self.right_side(ZNAK):
@@ -271,6 +300,8 @@ class Node():
     def postfiks_izraz(self):
         if self.right_side(PRIMARNI_IZRAZ):
             output = self.children[0].generate_output()
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
         
         elif self.right_side(POSTFIKS_IZRAZ, L_UGL_ZAGRADA, IZRAZ, D_UGL_ZAGRADA):
             # <postfiks_izraz>
@@ -304,24 +335,25 @@ class Node():
             return ""
 
         elif self.right_side(POSTFIKS_IZRAZ, L_ZAGRADA, LISTA_ARGUMENATA, D_ZAGRADA):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            required_types_list = self.children[0].tip.arguments_types
-            current_types_list = self.children[2].tipovi
-            n = len(required_types_list)
-            m = len(current_types_list)
-            if n != m:
-                return self.error()
-            for i in range(n):
-                if not implicit_cast(current_types_list[i], required_types_list[i]):
-                    self.error()
+            function_name = self.children[0].generate_output()
+            # if error:
+            #     return error
+            output = self.children[2].generate_output()
+            # if error:
+            #     return error
+            # required_types_list = self.children[0].tip.arguments_types
+            # current_types_list = self.children[2].tipovi
+            # n = len(required_types_list)
+            # m = len(current_types_list)
+            # if n != m:
+            #     return self.error()
+            # for i in range(n):
+            #     if not implicit_cast(current_types_list[i], required_types_list[i]):
+            #         self.error()
             self.tip = self.children[0].tip.return_type
             self.l_izraz = 0
-            return ""
+            output += f"\t\tCALL {function_name}\n" 
+            return output
 
 
         elif self.right_side(POSTFIKS_IZRAZ, OP_INC):
@@ -351,27 +383,29 @@ class Node():
     # <lista_argumenata>
     def lista_argumenata(self):
         if self.right_side(IZRAZ_PRIDRUZIVANJA):
-            error = self.children[0].generate_output()
-            if error:
-                return error
+            output = self.children[0].generate_output()
+            # if error:
+            #     return error
             self.tipovi = [self.children[0].tip]
 
         elif self.right_side(LISTA_ARGUMENATA, ZAREZ, IZRAZ_PRIDRUZIVANJA):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            error = self.children[2].generate_output()
-            if error:
-                return error
+            output = self.children[0].generate_output()
+            # if error:
+            #     return error
+            output += self.children[2].generate_output()
+            # if error:
+            #     return error
             self.tipovi = self.children[0].tipovi.copy()
             self.tipovi.append(self.children[2].tip)
-        return ""
+        return output
     
 
     # <unarni_izraz>
     def unarni_izraz(self):
         if self.right_side(POSTFIKS_IZRAZ):
             output = self.children[0].generate_output()
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
 
         elif self.right_side(OP_INC, UNARNI_IZRAZ):
             error = self.children[1].generate_output()
@@ -428,6 +462,8 @@ class Node():
     def cast_izraz(self):
         if self.right_side(UNARNI_IZRAZ):
             output = self.children[0].generate_output()
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
         
         elif self.right_side(L_ZAGRADA, IME_TIPA, D_ZAGRADA, CAST_IZRAZ):
             error = self.children[1].generate_output()
@@ -476,6 +512,8 @@ class Node():
     def multiplikativni_izraz(self):
         if self.right_side(CAST_IZRAZ):
             output = self.children[0].generate_output()
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
         
         elif (self.right_side(MULTIPLIKATIVNI_IZRAZ, OP_PUTA, CAST_IZRAZ) or
                 self.right_side(MULTIPLIKATIVNI_IZRAZ, OP_DIJELI, CAST_IZRAZ) or
@@ -499,6 +537,8 @@ class Node():
     def aditivni_izraz(self):
         if self.right_side(MULTIPLIKATIVNI_IZRAZ):
             output = self.children[0].generate_output()
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
 
         elif (self.right_side(ADITIVNI_IZRAZ, PLUS, MULTIPLIKATIVNI_IZRAZ) or 
                 self.right_side(ADITIVNI_IZRAZ, MINUS, MULTIPLIKATIVNI_IZRAZ)):
@@ -530,6 +570,8 @@ class Node():
     def odnosni_izraz(self):
         if self.right_side(ADITIVNI_IZRAZ):
             output = self.children[0].generate_output()
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
         
         elif (self.right_side(ODNOSNI_IZRAZ, OP_LT, ADITIVNI_IZRAZ) or
                 self.right_side(ODNOSNI_IZRAZ, OP_GT, ADITIVNI_IZRAZ) or
@@ -554,6 +596,8 @@ class Node():
     def jednakosni_izraz(self):
         if self.right_side(ODNOSNI_IZRAZ):
             output = self.children[0].generate_output()
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
         
         elif (self.right_side(JEDNAKOSNI_IZRAZ, OP_EQ, ODNOSNI_IZRAZ) or
                 self.right_side(JEDNAKOSNI_IZRAZ, OP_NEQ, ODNOSNI_IZRAZ)):
@@ -588,8 +632,8 @@ class Node():
             output = self.children[0].generate_output()
             # if error:
             #     return error
-            # self.tip = self.children[0].tip
-            # self.l_izraz = self.children[0].l_izraz
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
         
         elif self.right_side(BIN_I_IZRAZ, OP_BIN_I, JEDNAKOSNI_IZRAZ):
 
@@ -615,6 +659,8 @@ class Node():
     def bin_xili_izraz(self):
         if self.right_side(BIN_I_IZRAZ):
             output = self.children[0].generate_output()
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
         
         elif self.right_side(BIN_XILI_IZRAZ, OP_BIN_XILI, BIN_I_IZRAZ):
             output = self.children[0].generate_output()
@@ -642,6 +688,8 @@ class Node():
     def bin_ili_izrazi(self):
         if self.right_side(BIN_XILI_IZRAZ):
             output = self.children[0].generate_output()
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
         
         elif self.right_side(BIN_ILI_IZRAZ, OP_BIN_ILI, BIN_XILI_IZRAZ):
             output = self.children[0].generate_output()
@@ -669,6 +717,8 @@ class Node():
     def log_i_izraz(self):
         if self.right_side(BIN_ILI_IZRAZ):
             output = self.children[0].generate_output()
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
         
         elif self.right_side(LOG_I_IZRAZ, OP_I, BIN_ILI_IZRAZ):
             error = self.children[0].generate_output()
@@ -690,6 +740,8 @@ class Node():
     def log_ili_izraz(self):
         if self.right_side(LOG_I_IZRAZ):
             output = self.children[0].generate_output()
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
         
         elif self.right_side(LOG_ILI_IZRAZ, OP_ILI, LOG_I_IZRAZ):
             # if error:
@@ -718,8 +770,8 @@ class Node():
             output = self.children[0].generate_output()
             # if error:
             #     return error
-            # self.tip = self.children[0].tip
-            # self.l_izraz = self.children[0].l_izraz
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
         
         elif self.right_side(POSTFIKS_IZRAZ, OP_PRIDRUZI, IZRAZ_PRIDRUZIVANJA):
             error = self.children[0].generate_output()
@@ -759,11 +811,13 @@ class Node():
         # s tim da ce se puniti sa deklaracijama kad dodje do LISTA_DEKLARACIJA
         # ako se provjerava tijelo funkcije, onda se parametri funkcije
         # moraju spremiti u scope tijela prvo.
-        child_scope = Scope(self.scope_structure.current_scope, scope)
+
+        # TODO vjv stack_position treba promjeniti ako nije rijec o fji
+        child_scope = Scope(self.scope_structure.current_scope, scope, stack_position=0)
         self.scope_structure.add_child_scope(child_scope)
-        # if lista_identifikatora is not None and lista_tipova is not None:
-        #     for (idn, tip) in zip(lista_identifikatora, lista_tipova):
-        #         self.scope_structure.add_declaration(idn, tip)
+        if lista_identifikatora is not None and lista_tipova is not None:
+            for (idn, tip) in zip(lista_identifikatora, lista_tipova):
+                self.scope_structure.add_declaration(idn, tip)
         
         if self.right_side(L_VIT_ZAGRADA, LISTA_NAREDBI, D_VIT_ZAGRADA):
             output = self.children[1].generate_output()
@@ -913,6 +967,13 @@ class Node():
     def definicija_funkcije(self):
         new_function = Function()
         if self.right_side(IME_TIPA, IDN, L_ZAGRADA, KR_VOID, D_ZAGRADA, SLOZENA_NAREDBA):
+            ime_tipa = self.children[0]
+            idn = self.children[1]
+            current_return_type = ime_tipa.tip
+            self.tip = FunctionType([VOID], current_return_type)
+            self.scope_structure.add_definition(idn.lex, FunctionType([VOID], current_return_type))
+            self.scope_structure.add_declaration(idn.lex, FunctionType([VOID], current_return_type))
+
             new_function.set_name(self.children[1].lex)
             self.functions.add(new_function)
             output = self.children[5].generate_output(scope=FUNCTION)
@@ -921,8 +982,6 @@ class Node():
             # error = self.children[0].generate_output()
             # if error:
             #     return error
-            # ime_tipa = self.children[0]
-            # idn = self.children[1]
             # # ime_tipa.tip != const(T)
             # if is_const_x(ime_tipa.tip):
             #     return self.error()
@@ -933,16 +992,13 @@ class Node():
             # #     return self.error()
             # # ako postoji deklaracija imena IDN.ime u globalnom djelokrugu
             # # onda je pripadni tip de deklaracije funkcija(void -> <ime_tipa>.tip)
-            # current_return_type = ime_tipa.tip
             # global_scope = self.scope_structure.current_scope.global_scope()
             # if idn.lex in global_scope.declarations:
             #     required_type = global_scope.declarations[idn.lex]
             #     if required_type != FunctionType([VOID], current_return_type):
             #         self.error()
             # # zabiljezi definiciju i deklaraciju funkcije
-            # self.tip = FunctionType([VOID], current_return_type)
-            # self.scope_structure.add_definition(idn.lex, FunctionType([VOID], current_return_type))
-            # self.scope_structure.add_declaration(idn.lex, FunctionType([VOID], current_return_type))
+            
             # # generate_output(<slozena_naredba>)
             # error = self.children[5].generate_output()
             # if error:
@@ -950,79 +1006,81 @@ class Node():
 
         elif self.right_side(IME_TIPA, IDN, L_ZAGRADA, LISTA_PARAMETARA, D_ZAGRADA, SLOZENA_NAREDBA):
             error = self.children[0].generate_output()
-            # generate_output ime tipa
-            if error:
-                return error
+            # # generate_output ime tipa
+            # if error:
+            #     return error
             ime_tipa = self.children[0]
             idn = self.children[1]
             lista_parametara = self.children[3]
             # ime_tipa.tip != CONST(T)
-            if is_const_x(ime_tipa.tip):
-                return self.error()
-            global_scope = self.scope_structure.current_scope.global_scope()
+            # if is_const_x(ime_tipa.tip):
+            #     return self.error()
+            # global_scope = self.scope_structure.current_scope.global_scope()
             # ne postoji prije definirana funkcija IDN.ime
-            if idn.lex in self.scope_structure.all_functions_definitions().keys():
-                return self.error()
+            # if idn.lex in self.scope_structure.all_functions_definitions().keys():
+            #     return self.error()
             # generate_output(lista_parametara)
-            error = lista_parametara.generate_output()
-            if error:
-                return error
+            output = lista_parametara.generate_output()
+            # if error:
+            #     return error
             # ako postoji deklaracija IDN.ime u globalnom djelokrugu,
             # onda je pripadni tip funkcija(lista_param.tipovi -> ime_tipa.tip)
             current_return_type = ime_tipa.tip
             current_argument_types = lista_parametara.tipovi
-            if idn.lex in global_scope.declarations:
-                required_type = global_scope.declarations[idn.lex]
-                if required_type != FunctionType(current_argument_types, current_return_type):
-                    return self.error()
+            # if idn.lex in global_scope.declarations:
+            #     required_type = global_scope.declarations[idn.lex]
+            #     if required_type != FunctionType(current_argument_types, current_return_type):
+            #         return self.error()
             # zabiljezi definiciju i deklaraciju funkcije
             self.tip = FunctionType(current_argument_types, current_return_type)
             self.scope_structure.add_definition(idn.lex, FunctionType(current_argument_types, current_return_type))
             self.scope_structure.add_declaration(idn.lex, FunctionType(current_argument_types, current_return_type))
             # generate_output(slozena_naredba) uz parametre funkcije
             # koristeci <lista_param>.tipovi i <lista_param>.imena
-            error = self.children[5].generate_output(lista_identifikatora=lista_parametara.identifikatori, 
-                lista_tipova=lista_parametara.tipovi)
-            if error:
-                return error
-        
+            new_function.set_name(self.children[1].lex)
+            self.functions.add(new_function)
+            output = self.children[5].generate_output(lista_identifikatora=lista_parametara.identifikatori, 
+                lista_tipova=lista_parametara.tipovi, scope=FUNCTION)
+            # if error:
+            #     return error
+            self.functions.current_function().add_commands(output)
         return ""
 
     def lista_parametara(self):
         if self.right_side(DEKLARACIJA_PARAMETRA):
-            error = self.children[0].generate_output()
-            if error:
-                return error
+            output = self.children[0].generate_output()
+            # if error:
+            #     return error
             self.tipovi = [self.children[0].tip]
             self.identifikatori = [self.children[0].lex]
         elif self.right_side(LISTA_PARAMETARA, ZAREZ, DEKLARACIJA_PARAMETRA):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            if self.children[2].lex in self.children[0].identifikatori:
-                return self.error()
+            output = self.children[0].generate_output()
+            # if error:
+            #     return error
+            output = self.children[2].generate_output()
+            # if error:
+            #     return error
+            # if self.children[2].lex in self.children[0].identifikatori:
+            #     return self.error()
             self.tipovi = self.children[0].tipovi + [self.children[2].tip]
             self.identifikatori = self.children[0].identifikatori + [self.children[2].lex]
         return ""
 
     def deklaracija_parametra(self):
         if self.right_side(IME_TIPA, IDN):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            if self.children[0].tip == VOID:
-                return self.error()
+            output = self.children[0].generate_output()
+            # if error:
+            #     return error
+            # if self.children[0].tip == VOID:
+            #     return self.error()
             self.tip = self.children[0].tip
             self.lex = self.children[1].lex
         elif self.right_side(IME_TIPA, IDN, L_UGL_ZAGRADA, D_UGL_ZAGRADA):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            if self.children[0].tip == VOID:
-                return self.error()
+            output = self.children[0].generate_output()
+            # if error:
+            #     return error
+            # if self.children[0].tip == VOID:
+            #     return self.error()
             self.tip = make_niz(self.children[0].tip)
             self.lex = self.children[1].lex
         return ""

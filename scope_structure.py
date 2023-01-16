@@ -16,7 +16,9 @@ class ScopeStructure():
 
     def add_l_izraz(self, idn, l_izraz):
         self.current_scope.add_l_izraz(idn, l_izraz)
-        
+    
+    def return_scope_containg_name(self, name):
+        return self.current_scope.scope_containing_name(name)
 
     def idn_name_in_scope(self, name: str):
         return self.current_scope.idn_name_in_scope(name)
