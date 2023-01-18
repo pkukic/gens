@@ -120,7 +120,7 @@ class Scope():
         return len(self.idn_values) * 4
     
     def get_variable_offset(self, name: str):
-        return (self.idn_values.index(name) + 1) * 4
+        return (len(self.idn_values) - self.idn_values.index(name)) * 4
 
     def global_scope(self):
         if self.scope_type == GLOBAL:

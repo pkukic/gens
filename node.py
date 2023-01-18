@@ -259,14 +259,14 @@ class Node():
             else:
                 scope_container = self.scope_structure.return_scope_containg_name(self.children[0].lex)
                 stack_offset = scope_container.get_variable_offset(self.children[0].lex)
-                return f"\t\tLOAD R6, (R7+{stack_offset})\n"
+                return f"\t\tLOAD R6, (R7+{make_frisc_hex(stack_offset)})\n"
 
         elif self.right_side(BROJ):
-            if self.is_argument():
-                self.global_variables.add_line(f"K_{self.global_variables.size()}\t\tDW %D {self.children[0].lex}")
-                output = f"\t\tLOAD R6, (K_{self.global_variables.size() - 1})\n"
-                output += f"\t\tPUSH R6\n"
-                return output
+            # if self.is_argument():
+            #     self.global_variables.add_line(f"K_{self.global_variables.size()}\t\tDW %D {self.children[0].lex}")
+            #     output = f"\t\tLOAD R6, (K_{self.global_variables.size() - 1})\n"
+            #     output += f"\t\tPUSH R6\n"
+            #     return output
             self.tip = BROJ
             self.l_izraz = 0
             if self.scope_structure.current_scope.scope_type == GLOBAL:
@@ -352,7 +352,10 @@ class Node():
             #         self.error()
             self.tip = self.children[0].tip.return_type
             self.l_izraz = 0
-            output += f"\t\tCALL {function_name}\n" 
+            output += f"\t\tCALL {function_name}\n"
+            # count the number of PUSH
+            no_args = output.count("PUSH")
+            output += f"\t\tADD R7, %D {no_args * 4}, R7\n"
             return output
 
 
@@ -387,12 +390,14 @@ class Node():
             # if error:
             #     return error
             self.tipovi = [self.children[0].tip]
+            output += "\t\tPUSH R6\n"
 
         elif self.right_side(LISTA_ARGUMENATA, ZAREZ, IZRAZ_PRIDRUZIVANJA):
             output = self.children[0].generate_output()
             # if error:
             #     return error
             output += self.children[2].generate_output()
+            output += "\t\tPUSH R6\n"
             # if error:
             #     return error
             self.tipovi = self.children[0].tipovi.copy()
@@ -554,10 +559,27 @@ class Node():
             #     return self.error()
             self.tip = INT
             self.l_izraz = 0
+            # output = self.children[0].generate_output()
+            # output += "\t\tMOVE R6, R1\n"
+            # output += self.children[2].generate_output()
+            # output += "\t\tMOVE R6, R2\n"
+
+            # if self.right_side(ADITIVNI_IZRAZ, PLUS, MULTIPLIKATIVNI_IZRAZ):
+            #     output += "\t\tADD R1, R2, R6\n"
+            # else:
+            #     output += "\t\tSUB R1, R2, R6\n"
+            first_operand_mem = self.global_variables.size()
+            self.global_variables.add_line(f"G_{first_operand_mem}\t\tDW 0")
             output = self.children[0].generate_output()
-            output += "\t\tMOVE R6, R1\n"
+            output += f"\t\tSTORE R6, (G_{first_operand_mem})\n"
+
+            second_operand_mem = self.global_variables.size()
+            self.global_variables.add_line(f"G_{second_operand_mem}\t\tDW 0")
             output += self.children[2].generate_output()
-            output += "\t\tMOVE R6, R2\n"
+            output += f"\t\tSTORE R6, (G_{second_operand_mem})\n"
+
+            output += f"\t\tLOAD R1, (G_{first_operand_mem})\n"
+            output += f"\t\tLOAD R2, (G_{second_operand_mem})\n"
 
             if self.right_side(ADITIVNI_IZRAZ, PLUS, MULTIPLIKATIVNI_IZRAZ):
                 output += "\t\tADD R1, R2, R6\n"
@@ -821,7 +843,7 @@ class Node():
         
         if self.right_side(L_VIT_ZAGRADA, LISTA_NAREDBI, D_VIT_ZAGRADA):
             output = self.children[1].generate_output()
-            self.functions.current_function().add_commands(output)
+            # self.functions.current_function().add_commands(output)
         # elif self.right_side(L_VIT_ZAGRADA, LISTA_DEKLARACIJA, LISTA_NAREDBI, D_VIT_ZAGRADA):
         #     error = self.children[1].generate_output()
         #     if error:
@@ -1020,7 +1042,8 @@ class Node():
             # if idn.lex in self.scope_structure.all_functions_definitions().keys():
             #     return self.error()
             # generate_output(lista_parametara)
-            output = lista_parametara.generate_output()
+            # output = lista_parametara.generate_output()
+            lista_parametara.generate_output()
             # if error:
             #     return error
             # ako postoji deklaracija IDN.ime u globalnom djelokrugu,
@@ -1147,7 +1170,7 @@ class Node():
                 if self.ntip == INT:
                     type_to_save = "DW"
                 else:
-                    type_to_Save = "DH"
+                    type_to_save = "DH"
                 self.global_variables.add_line(name + tabs + type_to_save + " " + value)
             else:
                 ...

@@ -125,3 +125,10 @@ def make_const(x: str):
 
 def make_niz(x: str):
     return "niz(" + x + ")"
+
+
+def make_frisc_hex(x: int):
+    hex_str = hex(x)[2:].upper()
+    if hex_str[0].isalpha():
+        return "0" + hex_str
+    return hex_str
