@@ -23,10 +23,25 @@ class Function:
     def __init__(self):
         self.name = ""
         self.body = ""
+        self.local_vars = []
     
 
     def set_name(self, name):
         self.name = "F_" + name.upper()
+    
+
+    def add_local_var(self, name):
+        self.local_vars.append(name)
+    
+
+    def is_local_var(self, name):
+        return name in self.local_vars
+    
+    def local_var_offset(self, name):
+        return (len(self.local_vars) - self.local_vars.index(name) - 1) * 4
+
+    def local_var_count(self):
+        return len(self.local_vars)
     
 
     def add_commands(self, commands):

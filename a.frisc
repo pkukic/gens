@@ -5,7 +5,7 @@
 F_MAIN
 		LOAD R6, (K_0)
 		PUSH R6
-		LOAD R6, (R7+4)
+		LOAD R6, (R7+0)
 		STORE R6, (G_2)
 		LOAD R6, (K_4)
 		STORE R6, (G_3)
@@ -20,7 +20,7 @@ T_1
 I_1
 		STORE R6, (G_1)
 		LOAD R6, (K_6)
-		STORE R6, (R7+4)
+		STORE R6, (R7+0)
 
 		STORE R6, (G_5)
 		LOAD R1, (G_1)
@@ -34,7 +34,7 @@ I_1
 T_2
 		MOVE 0, R6
 I_2
-		LOAD R6, (R7+4)
+		LOAD R6, (R7+0)
 		STORE R6, (G_8)
 		LOAD R6, (K_10)
 		STORE R6, (G_9)
@@ -49,13 +49,13 @@ T_3
 I_3
 		STORE R6, (G_7)
 		LOAD R6, (K_12)
-		STORE R6, (R7+4)
+		STORE R6, (R7+0)
 
 		STORE R6, (G_11)
 		LOAD R1, (G_7)
 		LOAD R2, (G_11)
 		AND R6, R1, R2
-		MOVE 0, R1
+		MOVE 0, R6
 		CMP R6, R1
 		JP_EQ T_4
 		MOVE 1, R6
@@ -63,7 +63,8 @@ I_3
 T_4
 		MOVE 0, R6
 I_4
-		LOAD R6, (R7+4)
+		LOAD R6, (R7+0)
+		ADD R7, 4, R7
 		RET
 
 K_0		DW %D 15

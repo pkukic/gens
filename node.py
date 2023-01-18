@@ -257,8 +257,11 @@ class Node():
             if self.scope_structure.idn_name_not_in_local_scopes(self.children[0].lex):
                 return f"\t\tLOAD R6, (G_{(self.children[0].lex).upper()})\n"
             else:
-                scope_container = self.scope_structure.return_scope_containg_name(self.children[0].lex)
-                stack_offset = scope_container.get_variable_offset(self.children[0].lex)
+                if self.functions.current_function().is_local_var(self.children[0].lex):
+                    stack_offset = self.functions.current_function().local_var_offset(self.children[0].lex)
+                else:
+                    scope_container = self.scope_structure.return_scope_containg_name(self.children[0].lex)
+                    stack_offset = scope_container.get_variable_offset(self.children[0].lex)
                 return f"\t\tLOAD R6, (R7+{make_frisc_hex(stack_offset)})\n"
 
         elif self.right_side(BROJ):
@@ -324,15 +327,15 @@ class Node():
                 self.l_izraz = 1
 
         elif self.right_side(POSTFIKS_IZRAZ, L_ZAGRADA, D_ZAGRADA):
-            error = self.children[0].generate_output()
-            if error:
-                return error
+            output = self.children[0].generate_output()
+            # if error:
+            #     return error
             ft = self.children[0].tip
-            if not ft.arguments_types == [VOID]:
-                self.error()
+            # if not ft.arguments_types == [VOID]:
+            #     self.error()
             self.tip = ft.return_type
             self.l_izraz = 0
-            return ""
+            return output
 
         elif self.right_side(POSTFIKS_IZRAZ, L_ZAGRADA, LISTA_ARGUMENATA, D_ZAGRADA):
             function_name = self.children[0].generate_output()
@@ -1064,7 +1067,8 @@ class Node():
         #         return self.error()
         if self.right_side(KR_RETURN, IZRAZ, TOCKAZAREZ):
             output = self.children[1].generate_output()
-            output = output + "\t\tRET\n"
+            output += f"\t\tADD R7, {make_frisc_hex(self.functions.current_function().local_var_count() * 4)}, R7\n"
+            output += "\t\tRET\n"
         return output
 
     
@@ -1281,7 +1285,6 @@ class Node():
             else:
                 name = self.children[0].generate_output(ntip=current_ntip)
                 output = self.children[2].generate_output()
-                # self.scope_structure.add_declaration(name, type=current_ntip)
                 output += "\t\tPUSH R6\n"
 
             # error = self.children[0].generate_output(ntip=current_ntip)
@@ -1323,6 +1326,7 @@ class Node():
             if self.scope_structure.current_scope.scope_type == GLOBAL:
                 return "G_" + (self.children[0].lex).upper()
             else:
+                self.functions.current_function().add_local_var(self.children[0].lex)
                 return ""
                 
         elif self.right_side(IDN, L_UGL_ZAGRADA, BROJ, D_UGL_ZAGRADA):
