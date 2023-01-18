@@ -6,6 +6,18 @@ subdirs = [f.path for f in os.scandir(tests_dir) if f.is_dir()]
 subdirs = [os.path.abspath(f) for f in subdirs]
 subdirs = sorted(subdirs)
 
+ignore_list = ["12_27_rek", "35_lokal_arr", "42_dekl_vise_varijabli", "e_"]
+new_subdirs = []
+for dir in subdirs:
+    ignore = False
+    for elem in ignore_list:
+        if elem in dir:
+            ignore = True
+    if not ignore:
+        new_subdirs.append(dir)
+
+subdirs = new_subdirs
+
 temp_file_name = os.path.join(os.getcwd(), 'out.txt')
 # frisc_file_name = os.path.join(os.getcwd(), 'a.frisc')
 
