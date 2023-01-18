@@ -132,3 +132,13 @@ def make_frisc_hex(x: int):
     if hex_str[0].isalpha():
         return "0" + hex_str
     return hex_str
+
+
+
+class UniqueCounter:
+    x = 0
+
+    @classmethod
+    def get_unique(cls):
+        cls.x += 1
+        return cls.x

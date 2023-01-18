@@ -2,15 +2,80 @@
 		CALL F_MAIN
 		HALT
 
-F_F
-		LOAD R6, (R7+4)
-
-
 F_MAIN
 		LOAD R6, (K_0)
 		PUSH R6
-		CALL  F_F
-		ADD R7, %D 4, R7
+		LOAD R6, (R7+4)
+		STORE R6, (G_2)
+		LOAD R6, (K_4)
+		STORE R6, (G_3)
+		LOAD R1, (G_2)
+		LOAD R2, (G_3)
+		CMP R1, R2
+		JP_SGE T_1
+		MOVE 0, R6
+		JP I_1
+T_1
+		MOVE 1, R6
+I_1
+		STORE R6, (G_1)
+		LOAD R6, (K_6)
+		STORE R6, (R7+4)
+
+		STORE R6, (G_5)
+		LOAD R1, (G_1)
+		LOAD R2, (G_5)
+		OR R6, R1, R2
+		MOVE 0, R1
+		CMP R6, R1
+		JP_EQ T_2
+		MOVE 1, R6
+		JP I_2
+T_2
+		MOVE 0, R6
+I_2
+		LOAD R6, (R7+4)
+		STORE R6, (G_8)
+		LOAD R6, (K_10)
+		STORE R6, (G_9)
+		LOAD R1, (G_8)
+		LOAD R2, (G_9)
+		CMP R1, R2
+		JP_SLT T_3
+		MOVE 0, R6
+		JP I_3
+T_3
+		MOVE 1, R6
+I_3
+		STORE R6, (G_7)
+		LOAD R6, (K_12)
+		STORE R6, (R7+4)
+
+		STORE R6, (G_11)
+		LOAD R1, (G_7)
+		LOAD R2, (G_11)
+		AND R6, R1, R2
+		MOVE 0, R1
+		CMP R6, R1
+		JP_EQ T_4
+		MOVE 1, R6
+		JP I_4
+T_4
+		MOVE 0, R6
+I_4
+		LOAD R6, (R7+4)
 		RET
 
-K_0		DW %D 5
+K_0		DW %D 15
+G_1		DW 0
+G_2		DW 0
+G_3		DW 0
+K_4		DW %D 3
+G_5		DW 0
+K_6		DW %D 1
+G_7		DW 0
+G_8		DW 0
+G_9		DW 0
+K_10		DW %D 15
+G_11		DW 0
+K_12		DW %D 2

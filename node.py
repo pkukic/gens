@@ -288,12 +288,12 @@ class Node():
             self.l_izraz = 0
 
         elif self.right_side(L_ZAGRADA, IZRAZ, D_ZAGRADA):
-            error = self.children[1].generate_output()
-            if error:
-                return error
+            output = self.children[1].generate_output()
+            # if error:
+            #     return error
             self.tip = self.children[1].tip
             self.l_izraz = self.children[1].l_izraz
-        return ""
+        return output
     
 
     # <postfiks_izraz>
@@ -413,13 +413,13 @@ class Node():
             self.l_izraz = self.children[0].l_izraz
 
         elif self.right_side(OP_INC, UNARNI_IZRAZ):
-            error = self.children[1].generate_output()
-            if error:
-                return error
-            if self.children[1].l_izraz != 1:
-                return self.error()
-            if not implicit_cast(self.children[1].tip, INT):
-                return self.error()
+            output = self.children[1].generate_output()
+            # if error:
+            #     return error
+            # if self.children[1].l_izraz != 1:
+            #     return self.error()
+            # if not implicit_cast(self.children[1].tip, INT):
+            #     return self.error()
             self.tip = INT
             self.l_izraz = 0
 
@@ -599,16 +599,70 @@ class Node():
                 self.right_side(ODNOSNI_IZRAZ, OP_GT, ADITIVNI_IZRAZ) or
                 self.right_side(ODNOSNI_IZRAZ, OP_LTE, ADITIVNI_IZRAZ) or
                 self.right_side(ODNOSNI_IZRAZ, OP_GTE, ADITIVNI_IZRAZ)):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[0].tip, INT):
-                return self.error()
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[2].tip, INT):
-                return self.error()
+
+            first_operand_mem = self.global_variables.size()
+            self.global_variables.add_line(f"G_{first_operand_mem}\t\tDW 0")
+            output = self.children[0].generate_output()
+            output += f"\t\tSTORE R6, (G_{first_operand_mem})\n"
+    
+            second_operand_mem = self.global_variables.size()
+            self.global_variables.add_line(f"G_{second_operand_mem}\t\tDW 0")
+            output += self.children[2].generate_output()
+            output += f"\t\tSTORE R6, (G_{second_operand_mem})\n"
+
+            output += f"\t\tLOAD R1, (G_{first_operand_mem})\n"
+            output += f"\t\tLOAD R2, (G_{second_operand_mem})\n"
+            output += f"\t\tCMP R1, R2\n"
+            label_index = UniqueCounter.get_unique()
+
+            if self.right_side(ODNOSNI_IZRAZ, OP_LT, ADITIVNI_IZRAZ):
+
+                output += f"\t\tJP_SLT T_{label_index}\n"
+                output += f"\t\tMOVE 0, R6\n"
+                output += f"\t\tJP I_{label_index}\n"
+                output += f"T_{label_index}\n"
+                output += f"\t\tMOVE 1, R6\n"
+                output += f"I_{label_index}\n"
+
+            elif self.right_side(ODNOSNI_IZRAZ, OP_GT, ADITIVNI_IZRAZ):
+
+                output += f"\t\tJP_SGT T_{label_index}\n"
+                output += f"\t\tMOVE 0, R6\n"
+                output += f"\t\tJP I_{label_index}\n"
+                output += f"T_{label_index}\n"
+                output += f"\t\tMOVE 1, R6\n"
+                output += f"I_{label_index}\n"
+
+            elif self.right_side(ODNOSNI_IZRAZ, OP_LTE, ADITIVNI_IZRAZ):
+
+                output += f"\t\tJP_SLE T_{label_index}\n"
+                output += f"\t\tMOVE 0, R6\n"
+                output += f"\t\tJP I_{label_index}\n"
+                output += f"T_{label_index}\n"
+                output += f"\t\tMOVE 1, R6\n"
+                output += f"I_{label_index}\n"
+
+            elif self.right_side(ODNOSNI_IZRAZ, OP_GTE, ADITIVNI_IZRAZ):
+
+                output += f"\t\tJP_SGE T_{label_index}\n"
+                output += f"\t\tMOVE 0, R6\n"
+                output += f"\t\tJP I_{label_index}\n"
+                output += f"T_{label_index}\n"
+                output += f"\t\tMOVE 1, R6\n"
+                output += f"I_{label_index}\n"
+
+            # output = self.children[0].generate_output()
+            
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[0].tip, INT):
+            #     return self.error()
+            # output += self.children[2].generate_output()
+
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[2].tip, INT):
+            #     return self.error()
             self.tip = INT
             self.l_izraz = 0
         return output
@@ -743,16 +797,41 @@ class Node():
             self.l_izraz = self.children[0].l_izraz
         
         elif self.right_side(LOG_I_IZRAZ, OP_I, BIN_ILI_IZRAZ):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[0].tip, INT):
-                return self.error()
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[2].tip, INT):
-                return self.error()
+
+            first_operand_mem = self.global_variables.size()
+            self.global_variables.add_line(f"G_{first_operand_mem}\t\tDW 0")
+            output = self.children[0].generate_output()
+            output += f"\t\tSTORE R6, (G_{first_operand_mem})\n"
+    
+            second_operand_mem = self.global_variables.size()
+            self.global_variables.add_line(f"G_{second_operand_mem}\t\tDW 0")
+            output += self.children[2].generate_output()
+            output += f"\t\tSTORE R6, (G_{second_operand_mem})\n"
+
+            output += f"\t\tLOAD R1, (G_{first_operand_mem})\n"
+            output += f"\t\tLOAD R2, (G_{second_operand_mem})\n"
+            output += f"\t\tAND R6, R1, R2\n"
+            output += f"\t\tMOVE 0, R6\n"
+            output += f"\t\tCMP R6, R1\n"
+
+            label_index = UniqueCounter.get_unique()
+
+            output += f"\t\tJP_EQ T_{label_index}\n"
+            output += f"\t\tMOVE 1, R6\n"
+            output += f"\t\tJP I_{label_index}\n"
+            output += f"T_{label_index}\n"
+            output += f"\t\tMOVE 0, R6\n"
+            output += f"I_{label_index}\n"
+            # output = self.children[0].generate_output()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[0].tip, INT):
+            #     return self.error()
+            # output += self.children[2].generate_output()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[2].tip, INT):
+            #     return self.error()
             self.tip = INT
             self.l_izraz = 0
         return output
@@ -775,11 +854,36 @@ class Node():
             # if not implicit_cast(self.children[2].tip, INT):
             #     return self.error()
 
+            first_operand_mem = self.global_variables.size()
+            self.global_variables.add_line(f"G_{first_operand_mem}\t\tDW 0")
             output = self.children[0].generate_output()
-            output += "\t\tMOVE R6, R1\n"
+            output += f"\t\tSTORE R6, (G_{first_operand_mem})\n"
+    
+            second_operand_mem = self.global_variables.size()
+            self.global_variables.add_line(f"G_{second_operand_mem}\t\tDW 0")
             output += self.children[2].generate_output()
-            output += "\t\tMOVE R6, R2\n"
-            output += "\t\OR R1, R2, R6\n"
+            output += f"\t\tSTORE R6, (G_{second_operand_mem})\n"
+
+            output += f"\t\tLOAD R1, (G_{first_operand_mem})\n"
+            output += f"\t\tLOAD R2, (G_{second_operand_mem})\n"
+            output += f"\t\tOR R6, R1, R2\n"
+            output += f"\t\tMOVE 0, R1\n"
+            output += f"\t\tCMP R6, R1\n"
+
+            label_index = UniqueCounter.get_unique()
+
+            output += f"\t\tJP_EQ T_{label_index}\n"
+            output += f"\t\tMOVE 1, R6\n"
+            output += f"\t\tJP I_{label_index}\n"
+            output += f"T_{label_index}\n"
+            output += f"\t\tMOVE 0, R6\n"
+            output += f"I_{label_index}\n"
+
+            # output = self.children[0].generate_output()
+            # output += "\t\tMOVE R6, R1\n"
+            # output += self.children[2].generate_output()
+            # output += "\t\tMOVE R6, R2\n"
+            # output += "\t\tOR R1, R2, R6\n"
 
             self.tip = INT
             self.l_izraz = 0
@@ -796,16 +900,18 @@ class Node():
             self.l_izraz = self.children[0].l_izraz
         
         elif self.right_side(POSTFIKS_IZRAZ, OP_PRIDRUZI, IZRAZ_PRIDRUZIVANJA):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            if self.children[0].l_izraz != 1:
-                return self.error()
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[2].tip, self.children[0].tip):
-                return self.error()
+            load_idn_in_r6 = self.children[0].generate_output()
+            stack_position_of_idn = load_idn_in_r6.split(" ")[-1]
+            # if error:
+            #     return error
+            # if self.children[0].l_izraz != 1:
+            #     return self.error()
+            output = self.children[2].generate_output()
+            output += f"\t\tSTORE R6, {stack_position_of_idn}\n"
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[2].tip, self.children[0].tip):
+            #     return self.error()
             self.tip = self.children[0].tip
             self.l_izraz = 0
         return output
@@ -844,13 +950,13 @@ class Node():
         if self.right_side(L_VIT_ZAGRADA, LISTA_NAREDBI, D_VIT_ZAGRADA):
             output = self.children[1].generate_output()
             # self.functions.current_function().add_commands(output)
-        # elif self.right_side(L_VIT_ZAGRADA, LISTA_DEKLARACIJA, LISTA_NAREDBI, D_VIT_ZAGRADA):
-        #     error = self.children[1].generate_output()
-        #     if error:
-        #         return error
-        #     error = self.children[2].generate_output()
-        #     if error:
-        #         return error
+        elif self.right_side(L_VIT_ZAGRADA, LISTA_DEKLARACIJA, LISTA_NAREDBI, D_VIT_ZAGRADA):
+            output = self.children[1].generate_output()
+            # if error:
+            #     return error
+            output += self.children[2].generate_output()
+            # if error:
+            #     return error
         self.scope_structure.remove_scope()
         return output
         
@@ -858,13 +964,13 @@ class Node():
     def lista_naredbi(self):
         if self.right_side(NAREDBA):
             output = self.children[0].generate_output()
-        # elif self.right_side(LISTA_NAREDBI, NAREDBA):
-        #     error = self.children[0].generate_output()
-        #     if error:
-        #         return error
-        #     error = self.children[1].generate_output()
-        #     if error:
-        #         return error
+        elif self.right_side(LISTA_NAREDBI, NAREDBA):
+            output = self.children[0].generate_output()
+            # if error:
+            #     return error
+            output += self.children[1].generate_output()
+            # if error:
+            #     return error
         return output
 
     # <naredba>
@@ -1110,24 +1216,24 @@ class Node():
 
     def lista_deklaracija(self):
         if self.right_side(DEKLARACIJA):
-            error = self.children[0].generate_output()
-            if error:
-                return error
+            output = self.children[0].generate_output()
+            # if error:
+            #     return error
         elif self.right_side(LISTA_DEKLARACIJA, DEKLARACIJA):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            error = self.children[1].generate_output()
-            if error:
-                return error
-        return ""
+            output = self.children[0].generate_output()
+            # if error:
+            #     return error
+            otuput += self.children[1].generate_output()
+            # if error:
+            #     return error
+        return output
 
     def deklaracija(self):
         if self.right_side(IME_TIPA, LISTA_INIT_DEKLARATORA, TOCKAZAREZ):
-            self.children[0].generate_output()
+            output = self.children[0].generate_output()
             current_ntip = self.children[0].tip
-            self.children[1].generate_output(ntip=current_ntip)
-        return ""
+            output += self.children[1].generate_output(ntip=current_ntip)
+        return output
     
     def lista_init_deklaratora(self, ntip):
         # if ntip is None:
@@ -1135,15 +1241,15 @@ class Node():
         self.ntip = ntip
         current_ntip = self.ntip
         if self.right_side(INIT_DEKLARATOR):
-            self.children[0].generate_output(ntip=current_ntip)
+            output = self.children[0].generate_output(ntip=current_ntip)
         elif self.right_side(LISTA_INIT_DEKLARATORA, ZAREZ, INIT_DEKLARATOR):
-            error = self.children[0].generate_output(ntip=current_ntip)
-            if error:
-                return error
-            error = self.children[2].generate_output(ntip=current_ntip)
-            if error:
-                return error
-        return ""
+            output = self.children[0].generate_output(ntip=current_ntip)
+            # if error:
+            #     return error
+            output += self.children[2].generate_output(ntip=current_ntip)
+            # if error:
+            #     return error
+        return output
     
     def init_deklarator(self, ntip):
         # if ntip is None:
@@ -1173,7 +1279,11 @@ class Node():
                     type_to_save = "DH"
                 self.global_variables.add_line(name + tabs + type_to_save + " " + value)
             else:
-                ...
+                name = self.children[0].generate_output(ntip=current_ntip)
+                output = self.children[2].generate_output()
+                # self.scope_structure.add_declaration(name, type=current_ntip)
+                output += "\t\tPUSH R6\n"
+
             # error = self.children[0].generate_output(ntip=current_ntip)
             # if error:
             #     return error
@@ -1196,7 +1306,7 @@ class Node():
             #     for u in self.children[2].tipovi:
             #         if not implicit_cast(u, stripped_type):
             #             return self.error()
-        return ""
+        return output
     
     def izravni_deklarator(self, ntip):
         # if ntip is None:
@@ -1213,7 +1323,7 @@ class Node():
             if self.scope_structure.current_scope.scope_type == GLOBAL:
                 return "G_" + (self.children[0].lex).upper()
             else:
-                ...
+                return ""
                 
         elif self.right_side(IDN, L_UGL_ZAGRADA, BROJ, D_UGL_ZAGRADA):
             if self.ntip == VOID:
