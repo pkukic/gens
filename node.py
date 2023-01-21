@@ -308,23 +308,26 @@ class Node():
         
         elif self.right_side(POSTFIKS_IZRAZ, L_UGL_ZAGRADA, IZRAZ, D_UGL_ZAGRADA):
             # <postfiks_izraz>
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            if not is_niz_x(self.children[0].tip):
-                return self.error()
+            output = self.children[0].generate_output()
+            # if error:
+            #     return error
+            # if not is_niz_x(self.children[0].tip):
+            #     return self.error()
             # <izraz>
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[2].tip, INT):
-                return self.error()
+            output = self.children[2].generate_output()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[2].tip, INT):
+            #     return self.error()
+
+            output 
             
             self.tip = remove_niz_from_niz_x(self.children[0].tip)
             if is_const_x(self.tip):
                 self.l_izraz = 0
             else:
                 self.l_izraz = 1
+            return output
 
         elif self.right_side(POSTFIKS_IZRAZ, L_ZAGRADA, D_ZAGRADA):
             output = self.children[0].generate_output()
@@ -1331,21 +1334,23 @@ class Node():
                 return ""
                 
         elif self.right_side(IDN, L_UGL_ZAGRADA, BROJ, D_UGL_ZAGRADA):
-            if self.ntip == VOID:
-                return self.error()
-            if self.scope_structure.idn_name_in_local_scope(self.children[0].lex):
-                return self.error()
-            if self.children[2].vrijednost is None:
-                return self.error()
-            if self.children[2].vrijednost <= 0:
-                return self.error()
-            elif self.children[2].vrijednost > 1024:
-                return self.error()
+            # if self.ntip == VOID:
+            #     return self.error()
+            # if self.scope_structure.idn_name_in_local_scope(self.children[0].lex):
+            #     return self.error()
+            # if self.children[2].vrijednost is None:
+            #     return self.error()
+            # if self.children[2].vrijednost <= 0:
+            #     return self.error()
+            # elif self.children[2].vrijednost > 1024:
+            #     return self.error()
             array_type = make_niz(self.ntip)
             self.scope_structure.add_declaration(self.children[0].lex, array_type)
             self.scope_structure.add_l_izraz(self.children[0].lex, 1)
             self.tip = array_type
             self.br_elem = self.children[2].vrijednost
+            for i in range(self.br_elem):
+                self.global_variables.add_line(f"{self.children[0].lex}_{self.global_variables.size()}\t\tDW %D 0")
         elif self.right_side(IDN, L_ZAGRADA, KR_VOID, D_ZAGRADA):
             if self.scope_structure.idn_name_in_local_scope(self.children[0].lex):
                 required_type = self.scope_structure.type_of_idn_in_scope(self.children[0].lex)
