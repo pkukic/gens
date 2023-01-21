@@ -1128,9 +1128,11 @@ class Node():
         # if self.right_side(KR_CONTINUE, TOCKAZAREZ) or self.right_side(KR_BREAK, TOCKAZAREZ):
         #     if not self.in_loop():
         #         return self.error()
-        # if self.right_side(KR_RETURN, TOCKAZAREZ):
-        #     if self.nesting_function_type() != VOID:
-        #         return self.error()
+        if self.right_side(KR_RETURN, TOCKAZAREZ):
+            # if self.nesting_function_type() != VOID:
+            #     return self.error()
+            output = f"\t\tADD R7, {make_frisc_hex(self.functions.current_function().local_var_count() * 4)}, R7\n"
+            output += "\t\tRET\n"
         if self.right_side(KR_RETURN, IZRAZ, TOCKAZAREZ):
             output = self.children[1].generate_output()
             output += f"\t\tADD R7, {make_frisc_hex(self.functions.current_function().local_var_count() * 4)}, R7\n"
