@@ -846,11 +846,16 @@ class Node():
             self.l_izraz = self.children[0].l_izraz
         
         elif self.right_side(LOG_I_IZRAZ, OP_I, BIN_ILI_IZRAZ):
+            label_index = UniqueCounter.get_unique()
 
             first_operand_mem = self.global_variables.size()
             self.global_variables.add_line(f"G_{first_operand_mem}\t\tDW 0")
             output = self.children[0].generate_output()
             output += f"\t\tSTORE R6, (G_{first_operand_mem})\n"
+            output += f"\t\tMOVE 0, R4\n"
+            output += f"\t\tCMP R6, R4\n"
+            output += f"\t\tJP_EQ T_{label_index}\n"
+
     
             second_operand_mem = self.global_variables.size()
             self.global_variables.add_line(f"G_{second_operand_mem}\t\tDW 0")
@@ -863,7 +868,7 @@ class Node():
             output += f"\t\tMOVE 0, R6\n"
             output += f"\t\tCMP R6, R1\n"
 
-            label_index = UniqueCounter.get_unique()
+            
 
             output += f"\t\tJP_EQ T_{label_index}\n"
             output += f"\t\tMOVE 1, R6\n"
@@ -911,11 +916,15 @@ class Node():
             #     return error
             # if not implicit_cast(self.children[2].tip, INT):
             #     return self.error()
+            label_index = UniqueCounter.get_unique()
 
             first_operand_mem = self.global_variables.size()
             self.global_variables.add_line(f"G_{first_operand_mem}\t\tDW 0")
             output = self.children[0].generate_output()
             output += f"\t\tSTORE R6, (G_{first_operand_mem})\n"
+            output += f"\t\tMOVE 1, R4\n"
+            output += f"\t\tCMP R6, R4\n"
+            output += f"\t\tJP_EQ I_{label_index}\n"
     
             second_operand_mem = self.global_variables.size()
             self.global_variables.add_line(f"G_{second_operand_mem}\t\tDW 0")
@@ -928,7 +937,6 @@ class Node():
             output += f"\t\tMOVE 0, R1\n"
             output += f"\t\tCMP R6, R1\n"
 
-            label_index = UniqueCounter.get_unique()
 
             output += f"\t\tJP_EQ T_{label_index}\n"
             output += f"\t\tMOVE 1, R6\n"
@@ -1096,51 +1104,88 @@ class Node():
     # <naredba_petlje>
     def naredba_petlje(self):
         if self.right_side(KR_WHILE, L_ZAGRADA, IZRAZ, D_ZAGRADA, NAREDBA):
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[2].tip, INT):
-                return self.error()
-            error = self.children[4].generate_output()
-            if error:
-                return error
+            count = UniqueCounter.get_unique()
+            output = f"WHL_{count}\n"
+            output += self.children[2].generate_output()
+
+            output += "\t\tCMP R6, 0\n"
+            output += f"\t\tJP_EQ OUT_{count}\n"
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[2].tip, INT):
+            #     return self.error()
+            output += self.children[4].generate_output()
+            output += f"\t\tJP WHL_{count}\n"
+            output += f"OUT_{count}\n"
+            # if error:
+            #     return error
         elif self.right_side(KR_FOR, L_ZAGRADA, IZRAZ_NAREDBA, IZRAZ_NAREDBA, D_ZAGRADA, NAREDBA):
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            error = self.children[3].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[3].tip, INT):
-                return self.error()
-            error = self.children[5].generate_output()
-            if error:
-                return error
+            # error = self.children[2].generate_output()
+            # if error:
+            #     return error
+            # error = self.children[3].generate_output()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[3].tip, INT):
+            #     return self.error()
+            # error = self.children[5].generate_output()
+            # if error:
+            #     return error
+            count = UniqueCounter.get_unique()
+            output = self.children[2].generate_output()
+
+            output += f"FOR_{count}\n"
+            output += self.children[3].generate_output()
+            output += "\t\tCMP R6, 0\n"
+            output += f"\t\tJP_EQ OUT_{count}\n"
+
+            output += self.children[5].generate_output()
+
+            output += f"\t\tJP FOR_{count}\n"
+            output += f"OUT_{count}\n"
+
         elif self.right_side(KR_FOR, L_ZAGRADA, IZRAZ_NAREDBA, IZRAZ_NAREDBA, IZRAZ, D_ZAGRADA, NAREDBA):
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            error = self.children[3].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[3].tip, INT):
-                return self.error()
-            error = self.children[4].generate_output()
-            if error:
-                return error
-            error = self.children[6].generate_output()
-            if error:
-                return error
-        return ""
+            # error = self.children[2].generate_output()
+            # if error:
+            #     return error
+            # error = self.children[3].generate_output()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[3].tip, INT):
+            #     return self.error()
+            # error = self.children[4].generate_output()
+            # if error:
+            #     return error
+            # error = self.children[6].generate_output()
+            # if error:
+            #     return error
+            count = UniqueCounter.get_unique()
+            output = self.children[2].generate_output()
+
+            output += f"FOR_{count}\n"
+            output += self.children[3].generate_output()
+            output += "\t\tCMP R6, 0\n"
+            output += f"\t\tJP_EQ OUT_{count}\n"
+
+            output += self.children[6].generate_output()
+
+            output += self.children[4].generate_output()
+            output += f"\t\tJP FOR_{count}\n"
+            output += f"OUT_{count}\n"
+
+
+        return output
 
     # <naredba_skoka>
     def naredba_skoka(self):
         # if self.right_side(KR_CONTINUE, TOCKAZAREZ) or self.right_side(KR_BREAK, TOCKAZAREZ):
         #     if not self.in_loop():
         #         return self.error()
-        # if self.right_side(KR_RETURN, TOCKAZAREZ):
-        #     if self.nesting_function_type() != VOID:
-        #         return self.error()
+        if self.right_side(KR_RETURN, TOCKAZAREZ):
+            # if self.nesting_function_type() != VOID:
+            #     return self.error()
+            output = f"\t\tADD R7, {make_frisc_hex(self.functions.current_function().local_var_count() * 4)}, R7\n"
+            output += "\t\tRET\n"
         if self.right_side(KR_RETURN, IZRAZ, TOCKAZAREZ):
             output = self.children[1].generate_output()
             output += f"\t\tADD R7, {make_frisc_hex(self.functions.current_function().local_var_count() * 4)}, R7\n"
@@ -1346,6 +1391,7 @@ class Node():
             #     if is_const_x(remove_niz_from_niz_x(self.children[0].tip)):
             #         return self.error()
             if not self.scope_structure.current_scope.is_global():
+                output += "\t\tPUSH R6\n"
                 self.functions.current_function().declared()
         elif self.right_side(IZRAVNI_DEKLARATOR, OP_PRIDRUZI, INICIJALIZATOR):
             if self.scope_structure.current_scope.is_global():
@@ -1365,7 +1411,6 @@ class Node():
                 name = self.children[0].generate_output(ntip=current_ntip)
                 output = self.children[2].generate_output()
                 output += "\t\tPUSH R6\n"
-            if not self.scope_structure.current_scope.is_global():
                 self.functions.current_function().declared()
 
             # error = self.children[0].generate_output(ntip=current_ntip)
