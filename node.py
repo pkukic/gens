@@ -553,16 +553,26 @@ class Node():
         elif (self.right_side(MULTIPLIKATIVNI_IZRAZ, OP_PUTA, CAST_IZRAZ) or
                 self.right_side(MULTIPLIKATIVNI_IZRAZ, OP_DIJELI, CAST_IZRAZ) or
                 self.right_side(MULTIPLIKATIVNI_IZRAZ, OP_MOD, CAST_IZRAZ)):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[0].tip, INT):
-                return self.error()
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[2].tip, INT):
-                return self.error()
+            
+            if self.right_side(MULTIPLIKATIVNI_IZRAZ, OP_PUTA, CAST_IZRAZ):
+                output = self.children[0].generate_output()
+                output += "\t\tMOVE R6, R1\n"
+                output += self.children[2].generate_output()
+                output += "\t\tMOVE R6, R2\n"
+                output += "\t\tPUSH R1\n"
+                output += "\t\tPUSH R2\n"
+                output += "\t\tCALL PUTA\n"
+                output += "\t\tADD R7, 8, R7\n"
+            # error = self.children[0].generate_output()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[0].tip, INT):
+            #     return self.error()
+            # error = self.children[2].generate_output()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[2].tip, INT):
+            #     return self.error()
             self.tip = INT
             self.l_izraz = 0
         return output

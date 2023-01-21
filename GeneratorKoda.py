@@ -8,7 +8,7 @@ from global_variables import GlobalVariables
 import sys
 
 
-INPUT_FILE_PATH = "./testovi/27_binarni_xor/test.in"
+INPUT_FILE_PATH = "./testovi/40_func_decl/test.in"
 
 
 def main():
@@ -35,6 +35,42 @@ def main():
     #     elif defs != decs:
     #         print('funkcija')
     output = gen_tree.root_node.generate_output()
+
+    mnozenje_kod = ""
+    mnozenje_kod += "PUTA\n"
+    mnozenje_kod += "\t\tLOAD R1, (R7+8)\n"
+    mnozenje_kod += "\t\tLOAD R2, (R7+4)\n"
+    mnozenje_kod += "\t\tMOVE 0, R6\n"
+    mnozenje_kod += "\t\tXOR R1, R2, R3\n"
+    mnozenje_kod += "TEST_1\n"
+    mnozenje_kod += "\t\tOR R1, R1, R1\n"
+    mnozenje_kod += "\t\tJR_P TEST_2\n"
+    mnozenje_kod += "NEGAT_1\n"
+    mnozenje_kod += "\t\tXOR R1, -1, R1\n"
+    mnozenje_kod += "\t\tADD R1, 1, R1\n"
+    mnozenje_kod += "TEST_2\n"
+    mnozenje_kod += "\t\tOR R2, R2, R2\n"
+    mnozenje_kod += "\t\tJR_P PETLJA\n"
+    mnozenje_kod += "NEGAT_2\n"
+    mnozenje_kod += "\t\tXOR R2, -1, R2\n"
+    mnozenje_kod += "\t\tADD R2, 1, R2\n"
+    mnozenje_kod += "PETLJA\n"
+    mnozenje_kod += "\t\tADD R1, R6, R6\n"
+    mnozenje_kod += "\t\tSUB R2, 1, R2\n"
+    mnozenje_kod += "\t\tJR_NZ PETLJA\n"
+    mnozenje_kod += "PREDZNAK\n"
+    mnozenje_kod += "\t\tROTL R3, 1, R3\n"
+    mnozenje_kod += "\t\tJR_NC GOTOVO\n"
+    mnozenje_kod += "RAZLICIT\n"
+    mnozenje_kod += "\t\tXOR R6, -1, R6\n"
+    mnozenje_kod += "\t\tADD R6, 1, R6\n"
+    mnozenje_kod += "GOTOVO\n"
+    mnozenje_kod += "\t\tLOAD R1, (R7+8)\n"
+    mnozenje_kod += "\t\tLOAD R2, (R7+4)\n"
+    mnozenje_kod += "\t\tRET\n"
+
+    output += mnozenje_kod
+
     with open("a.frisc", "w") as frisc:
         frisc.write(output)
             
