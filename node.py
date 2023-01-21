@@ -1086,14 +1086,21 @@ class Node():
     # <naredba_petlje>
     def naredba_petlje(self):
         if self.right_side(KR_WHILE, L_ZAGRADA, IZRAZ, D_ZAGRADA, NAREDBA):
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[2].tip, INT):
-                return self.error()
-            error = self.children[4].generate_output()
-            if error:
-                return error
+            count = UniqueCounter.get_unique()
+            output = f"WHL_{count}\n"
+            output += self.children[2].generate_output()
+
+            output += "\t\tCMP R6, 0\n"
+            output += f"\t\tJP_EQ OUT_{count}\n"
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[2].tip, INT):
+            #     return self.error()
+            output += self.children[4].generate_output()
+            output += f"\t\tJP WHL_{count}\n"
+            output += f"OUT_{count}\n"
+            # if error:
+            #     return error
         elif self.right_side(KR_FOR, L_ZAGRADA, IZRAZ_NAREDBA, IZRAZ_NAREDBA, D_ZAGRADA, NAREDBA):
             error = self.children[2].generate_output()
             if error:
@@ -1121,7 +1128,7 @@ class Node():
             error = self.children[6].generate_output()
             if error:
                 return error
-        return ""
+        return output
 
     # <naredba_skoka>
     def naredba_skoka(self):
