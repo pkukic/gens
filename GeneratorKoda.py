@@ -9,12 +9,12 @@ import sys
 
 
 INPUT_FILE_PATH = "./testovi/05_plus/test.in"
-# INPUT_FILE_PATH = "/home/patrik/Drive/Current/Faks/Nastava/3_godina/PPJ/Projekti/gens/testovi/18_21_if3/test.in"
+INPUT_FILE_PATH = "/home/patrik/Drive/Current/Faks/Nastava/3_godina/PPJ/Projekti/gens/testovi/18_21_if3/test.in"
 
 
 def main():
     # with open(INPUT_FILE_PATH, 'r') as file:
-        # input = [line.rstrip() for line in file.readlines()]
+    #     input = [line.rstrip() for line in file.readlines()]
     input = [line.rstrip() for line in sys.stdin.readlines()]
     # make the generative tree from the input
     functions = Functions()
