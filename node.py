@@ -563,6 +563,27 @@ class Node():
                 output += "\t\tPUSH R2\n"
                 output += "\t\tCALL PUTA\n"
                 output += "\t\tADD R7, 8, R7\n"
+
+            if self.right_side(MULTIPLIKATIVNI_IZRAZ, OP_DIJELI, CAST_IZRAZ):
+                output = self.children[0].generate_output()
+                output += "\t\tMOVE R6, R1\n"
+                output += self.children[2].generate_output()
+                output += "\t\tMOVE R6, R2\n"
+                output += "\t\tPUSH R1\n"
+                output += "\t\tPUSH R2\n"
+                output += "\t\tCALL DIJELI\n"
+                output += "\t\tADD R7, 8, R7\n"
+
+            if self.right_side(MULTIPLIKATIVNI_IZRAZ, OP_MOD, CAST_IZRAZ):
+                output = self.children[0].generate_output()
+                output += "\t\tMOVE R6, R1\n"
+                output += self.children[2].generate_output()
+                output += "\t\tMOVE R6, R2\n"
+                output += "\t\tPUSH R1\n"
+                output += "\t\tPUSH R2\n"
+                output += "\t\tCALL MODULO\n"
+                output += "\t\tADD R7, 8, R7\n"
+
             # error = self.children[0].generate_output()
             # if error:
             #     return error
