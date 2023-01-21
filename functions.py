@@ -47,7 +47,6 @@ class Function:
         return name in self.local_vars
     
     def local_var_offset(self, name):
-        # return (len(self.local_vars) - self.local_vars[::-1].index(name) - 1 - self.undecalred) * 4
         return (self.local_vars[::-1].index(name) - self.undecalred) * 4
 
     def local_var_count(self):
