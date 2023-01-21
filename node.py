@@ -147,7 +147,7 @@ class Node():
         return output_string
     
 
-    def generate_output(self, scope=None, lista_identifikatora=None, lista_tipova=None, ntip=None):
+    def generate_output(self, scope=None, lista_identifikatora=None, lista_tipova=None, ntip=None, inside_if=False):
         output = ""
         if (self.name == PRIMARNI_IZRAZ):
             output = self.primarni_izraz()
@@ -180,11 +180,11 @@ class Node():
         elif (self.name == LOG_I_IZRAZ):
             output = self.log_i_izraz()
         elif (self.name == LOG_ILI_IZRAZ):
-            output = self.log_ili_izraz()
+            output = self.log_ili_izraz(inside_if=inside_if)
         elif (self.name == IZRAZ_PRIDRUZIVANJA):
-            output = self.izraz_pridruzivanja()
+            output = self.izraz_pridruzivanja(inside_if=inside_if)
         elif (self.name == IZRAZ):
-            output = self.izraz()
+            output = self.izraz(inside_if=inside_if)
 
         elif (self.name == SLOZENA_NAREDBA):
             output = self.slozena_naredba(scope=scope, 
@@ -823,6 +823,15 @@ class Node():
     def log_i_izraz(self):
         if self.right_side(BIN_ILI_IZRAZ):
             output = self.children[0].generate_output()
+            # if inside_if:
+            #     count = UniqueCounter.get_unique()
+            #     output += f"\t\tMOVE R6, R5\n"
+            #     output += f"\t\tCMP R5, 0\n"
+            #     output += f"\t\tJP_NE ASS_{count}\n"
+            #     output += f"\t\tJP_EQ NA_{count}\n"
+            #     output += f"ASS_{count}\n"
+            #     output += f"\t\tMOVE 1, R5\n"
+            #     output += f"NA_{count}\n"
             self.tip = self.children[0].tip
             self.l_izraz = self.children[0].l_izraz
         
@@ -868,12 +877,21 @@ class Node():
     
 
     # <log_ili_izraz>
-    def log_ili_izraz(self):
+    def log_ili_izraz(self, inside_if=False):
         if self.right_side(LOG_I_IZRAZ):
             output = self.children[0].generate_output()
             self.tip = self.children[0].tip
             self.l_izraz = self.children[0].l_izraz
-        
+            if inside_if:
+                count = UniqueCounter.get_unique()
+                output += f"\t\tMOVE R6, R5\n"
+                output += f"\t\tCMP R5, 0\n"
+                output += f"\t\tJP_NE ASS_{count}\n"
+                output += f"\t\tJP_EQ NA_{count}\n"
+                output += f"ASS_{count}\n"
+                output += f"\t\tMOVE 1, R5\n"
+                output += f"NA_{count}\n"
+            
         elif self.right_side(LOG_ILI_IZRAZ, OP_ILI, LOG_I_IZRAZ):
             # if error:
             #     return error
@@ -921,9 +939,9 @@ class Node():
     
 
     # <izraz_pridruzivanja>
-    def izraz_pridruzivanja(self):
+    def izraz_pridruzivanja(self, inside_if=False):
         if self.right_side(LOG_ILI_IZRAZ):
-            output = self.children[0].generate_output()
+            output = self.children[0].generate_output(inside_if=inside_if)
             # if error:
             #     return error
             self.tip = self.children[0].tip
@@ -948,14 +966,14 @@ class Node():
     
 
     # <izraz>
-    def izraz(self):
+    def izraz(self, inside_if=False):
         if self.right_side(IZRAZ_PRIDRUZIVANJA):
-            output = self.children[0].generate_output()
+            output = self.children[0].generate_output(inside_if=inside_if)
         elif self.right_side(IZRAZ, ZAREZ, IZRAZ_PRIDRUZIVANJA):
-            error = self.children[0].generate_output()
+            error = self.children[0].generate_output(inside_if=inside_if)
             if error:
                 return error
-            error = self.children[2].generate_output()
+            error = self.children[2].generate_output(inside_if=inside_if)
             if error:
                 return error
             self.tip = self.children[2].tip
@@ -1028,8 +1046,8 @@ class Node():
     def naredba_grananja(self):
         if self.right_side(KR_IF, L_ZAGRADA, IZRAZ, D_ZAGRADA, NAREDBA):
             count = UniqueCounter.get_unique()
-            output = self.children[2].generate_output()
-            output += f"\t\tCMP R6, 1\n"
+            output = self.children[2].generate_output(inside_if=True)
+            output += f"\t\tCMP R5, 1\n"
             output += f"\t\tJP_EQ THEN_{count}\n"
             output += f"\t\tJP_NE END_{count}\n"
             output += f"THEN_{count}\n"
@@ -1043,17 +1061,26 @@ class Node():
             # if error:
             #     return error
         elif self.right_side(KR_IF, L_ZAGRADA, IZRAZ, D_ZAGRADA, NAREDBA, KR_ELSE, NAREDBA):
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[2].tip, INT):
-                return self.error()
-            error = self.children[4].generate_output()
-            if error:
-                return error
-            error = self.children[6].generate_output()
-            if error:
-                return error
+            count = UniqueCounter.get_unique()
+            output = self.children[2].generate_output(inside_if=True)
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[2].tip, INT):
+            #     return self.error()
+            output += f"\t\tCMP R5, 1\n"
+            output += f"\t\tJP_EQ THEN_{count}\n"
+            output += f"\t\tJP_NE ELSE_{count}\n"
+            output += f"THEN_{count}\n"
+            output += self.children[4].generate_output()
+            output += f"\t\tJP END_{count}\n"
+            # if error:
+            #     return error
+            output += f"ELSE_{count}\n"
+            output += self.children[6].generate_output()
+            output += f"\t\tJP END_{count}\n"
+            output += f"END_{count}\n"
+            # if error:
+            #     return error
         return output
 
     # <naredba_petlje>
