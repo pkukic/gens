@@ -9,7 +9,7 @@ import sys
 
 
 INPUT_FILE_PATH = "./testovi/05_plus/test.in"
-# INPUT_FILE_PATH = "/home/filip/Work/FER/5_semestar/ppj/labosi/sem/temp.txt"
+# INPUT_FILE_PATH = "/home/patrik/Drive/Current/Faks/Nastava/3_godina/PPJ/Projekti/gens/testovi/18_21_if3/test.in"
 
 
 def main():
