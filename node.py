@@ -272,7 +272,7 @@ class Node():
             #     return output
             self.tip = BROJ
             self.l_izraz = 0
-            if self.scope_structure.current_scope.scope_type == GLOBAL:
+            if self.scope_structure.current_scope.is_global():
                 return "%D " + self.children[0].lex
             else:
                 self.global_variables.add_line(f"K_{self.global_variables.size()}\t\tDW %D {self.children[0].lex}")
@@ -363,24 +363,36 @@ class Node():
 
 
         elif self.right_side(POSTFIKS_IZRAZ, OP_INC):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            if self.children[0].l_izraz != 1:
-                return self.error()
-            if not implicit_cast(self.children[0].tip, INT):
-                return self.error()
+            output = self.children[0].generate_output()
+            # works only if output is of type 'LOAD R6, (R7+4)'
+            variable_address = output.split(" ")[2]
+            output += "\t\tMOVE R6, R1\n"
+            output += "\t\tMOVE 1, R2\n"
+            output += "\t\tADD R1, R2, R3\n"
+            output += f"\t\tSTORE R3, {variable_address}\n"
+            # if error:
+            #     return error
+            # if self.children[0].l_izraz != 1:
+            #     return self.error()
+            # if not implicit_cast(self.children[0].tip, INT):
+            #     return self.error()
             self.tip = INT
             self.l_izraz = 0
             
         elif self.right_side(POSTFIKS_IZRAZ, OP_DEC):
-            error = self.children[0].generate_output()
-            if error:
-                return error
-            if self.children[0].l_izraz != 1:
-                return self.error()
-            if not implicit_cast(self.children[0].tip, INT):
-                return self.error()
+            output = self.children[0].generate_output()
+            # works only if output is of type 'LOAD R6, (R7+4)'
+            variable_address = output.split(" ")[2]
+            output += "\t\tMOVE R6, R1\n"
+            output += "\t\tMOVE 1, R2\n"
+            output += "\t\SUB R1, R2, R3\n"
+            output += f"\t\tSTORE R3, {variable_address}\n"
+            # if error:
+            #     return error
+            # if self.children[0].l_izraz != 1:
+            #     return self.error()
+            # if not implicit_cast(self.children[0].tip, INT):
+            #     return self.error()
             self.tip = INT
             self.l_izraz = 0
         return output
@@ -417,6 +429,12 @@ class Node():
 
         elif self.right_side(OP_INC, UNARNI_IZRAZ):
             output = self.children[1].generate_output()
+            # work only if output like 'LOAD R6, (R7+4)'
+            variable_address = output.split(" ")[2]
+            output += "\t\tMOVE R6, R1\n"
+            output += "\t\tMOVE 1, R2\n"
+            output += "\t\tADD R1, R2, R6\n"
+            output += f"\t\tSTORE R6, {variable_address}\n"
             # if error:
             #     return error
             # if self.children[1].l_izraz != 1:
@@ -427,13 +445,19 @@ class Node():
             self.l_izraz = 0
 
         elif self.right_side(OP_DEC, UNARNI_IZRAZ):
-            error = self.children[1].generate_output()
-            if error:
-                return error
-            if self.children[1].l_izraz != 1:
-                return self.error()
-            if not implicit_cast(self.children[1].tip, INT):
-                return self.error()
+            output = self.children[1].generate_output()
+            # work only if output like 'LOAD R6, (R7+4)'
+            variable_address = output.split(" ")[2]
+            output += "\t\tMOVE R6, R1\n"
+            output += "\t\tMOVE 1, R2\n"
+            output += "\t\SUB R1, R2, R6\n"
+            output += f"\t\tSTORE R6, {variable_address}\n"
+            # if error:
+            #     return error
+            # if self.children[1].l_izraz != 1:
+            #     return self.error()
+            # if not implicit_cast(self.children[1].tip, INT):
+            #     return self.error()
             self.tip = INT
             self.l_izraz = 0
 
@@ -1227,7 +1251,7 @@ class Node():
             output = self.children[0].generate_output()
             # if error:
             #     return error
-            otuput += self.children[1].generate_output()
+            output += self.children[1].generate_output()
             # if error:
             #     return error
         return output
@@ -1269,8 +1293,10 @@ class Node():
             # if is_niz_x(self.children[0].tip):
             #     if is_const_x(remove_niz_from_niz_x(self.children[0].tip)):
             #         return self.error()
+            if self.scope_structure.current_scope != GLOBAL:
+                self.functions.current_function().declared()
         elif self.right_side(IZRAVNI_DEKLARATOR, OP_PRIDRUZI, INICIJALIZATOR):
-            if self.scope_structure.current_scope.scope_type == GLOBAL:
+            if self.scope_structure.current_scope.is_global():
                 name = self.children[0].generate_output(ntip=current_ntip)
                 value = self.children[2].generate_output()
                 if len(name) < 4:
@@ -1287,6 +1313,8 @@ class Node():
                 name = self.children[0].generate_output(ntip=current_ntip)
                 output = self.children[2].generate_output()
                 output += "\t\tPUSH R6\n"
+            if not self.scope_structure.current_scope.is_global():
+                self.functions.current_function().declared()
 
             # error = self.children[0].generate_output(ntip=current_ntip)
             # if error:
@@ -1324,10 +1352,11 @@ class Node():
             self.scope_structure.add_declaration(self.children[0].lex, self.ntip)
             self.scope_structure.add_l_izraz(self.children[0].lex, 1)
             self.tip = self.ntip
-            if self.scope_structure.current_scope.scope_type == GLOBAL:
+            if self.scope_structure.current_scope.is_global():
                 return "G_" + (self.children[0].lex).upper()
             else:
                 self.functions.current_function().add_local_var(self.children[0].lex)
+                self.functions.current_function().in_process_of_declaring()
                 return ""
                 
         elif self.right_side(IDN, L_UGL_ZAGRADA, BROJ, D_UGL_ZAGRADA):

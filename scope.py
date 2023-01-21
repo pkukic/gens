@@ -126,3 +126,6 @@ class Scope():
         if self.scope_type == GLOBAL:
             return self
         return self.parent_scope.global_scope()
+    
+    def is_global(self):
+        return self.scope_type == GLOBAL

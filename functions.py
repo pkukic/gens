@@ -24,6 +24,7 @@ class Function:
         self.name = ""
         self.body = ""
         self.local_vars = []
+        self.undecalred = 0
     
 
     def set_name(self, name):
@@ -34,11 +35,19 @@ class Function:
         self.local_vars.append(name)
     
 
+    def in_process_of_declaring(self):
+        self.undecalred += 1
+    
+
+    def declared(self):
+        self.undecalred -= 1
+    
+
     def is_local_var(self, name):
         return name in self.local_vars
     
     def local_var_offset(self, name):
-        return (len(self.local_vars) - self.local_vars.index(name) - 1) * 4
+        return (len(self.local_vars) - self.local_vars.index(name) - 1 - self.undecalred) * 4
 
     def local_var_count(self):
         return len(self.local_vars)
