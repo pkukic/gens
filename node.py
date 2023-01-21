@@ -1102,32 +1102,60 @@ class Node():
             # if error:
             #     return error
         elif self.right_side(KR_FOR, L_ZAGRADA, IZRAZ_NAREDBA, IZRAZ_NAREDBA, D_ZAGRADA, NAREDBA):
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            error = self.children[3].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[3].tip, INT):
-                return self.error()
-            error = self.children[5].generate_output()
-            if error:
-                return error
+            # error = self.children[2].generate_output()
+            # if error:
+            #     return error
+            # error = self.children[3].generate_output()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[3].tip, INT):
+            #     return self.error()
+            # error = self.children[5].generate_output()
+            # if error:
+            #     return error
+            count = UniqueCounter.get_unique()
+            output = self.children[2].generate_output()
+
+            output += f"FOR_{count}\n"
+            output += self.children[3].generate_output()
+            output += "\t\tCMP R6, 0\n"
+            output += f"\t\tJP_EQ OUT_{count}\n"
+
+            output += self.children[5].generate_output()
+
+            output += f"\t\tJP FOR_{count}\n"
+            output += f"OUT_{count}\n"
+
         elif self.right_side(KR_FOR, L_ZAGRADA, IZRAZ_NAREDBA, IZRAZ_NAREDBA, IZRAZ, D_ZAGRADA, NAREDBA):
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            error = self.children[3].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[3].tip, INT):
-                return self.error()
-            error = self.children[4].generate_output()
-            if error:
-                return error
-            error = self.children[6].generate_output()
-            if error:
-                return error
+            # error = self.children[2].generate_output()
+            # if error:
+            #     return error
+            # error = self.children[3].generate_output()
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[3].tip, INT):
+            #     return self.error()
+            # error = self.children[4].generate_output()
+            # if error:
+            #     return error
+            # error = self.children[6].generate_output()
+            # if error:
+            #     return error
+            count = UniqueCounter.get_unique()
+            output = self.children[2].generate_output()
+
+            output += f"FOR_{count}\n"
+            output += self.children[3].generate_output()
+            output += "\t\tCMP R6, 0\n"
+            output += f"\t\tJP_EQ OUT_{count}\n"
+
+            output += self.children[6].generate_output()
+
+            output += self.children[4].generate_output()
+            output += f"\t\tJP FOR_{count}\n"
+            output += f"OUT_{count}\n"
+
+
         return output
 
     # <naredba_skoka>
@@ -1345,6 +1373,7 @@ class Node():
             #     if is_const_x(remove_niz_from_niz_x(self.children[0].tip)):
             #         return self.error()
             if not self.scope_structure.current_scope.is_global():
+                output += "\t\tPUSH R6\n"
                 self.functions.current_function().declared()
         elif self.right_side(IZRAVNI_DEKLARATOR, OP_PRIDRUZI, INICIJALIZATOR):
             if self.scope_structure.current_scope.is_global():
@@ -1364,7 +1393,6 @@ class Node():
                 name = self.children[0].generate_output(ntip=current_ntip)
                 output = self.children[2].generate_output()
                 output += "\t\tPUSH R6\n"
-            if not self.scope_structure.current_scope.is_global():
                 self.functions.current_function().declared()
 
             # error = self.children[0].generate_output(ntip=current_ntip)
