@@ -47,7 +47,8 @@ class Function:
         return name in self.local_vars
     
     def local_var_offset(self, name):
-        return (len(self.local_vars) - self.local_vars.index(name) - 1 - self.undecalred) * 4
+        # return (len(self.local_vars) - self.local_vars[::-1].index(name) - 1 - self.undecalred) * 4
+        return (self.local_vars[::-1].index(name) - self.undecalred) * 4
 
     def local_var_count(self):
         return len(self.local_vars)
@@ -55,6 +56,10 @@ class Function:
 
     def add_commands(self, commands):
         self.body = commands
+    
+
+    def remove_n_local_vars(self, n):
+        self.local_vars = self.local_vars[0:len(self.local_vars) - n]
 
 
     def __str__(self):

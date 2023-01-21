@@ -987,6 +987,11 @@ class Node():
             output += self.children[2].generate_output()
             # if error:
             #     return error
+        # remove local vars from stack
+        scope_len = len(self.scope_structure.current_scope.idn_values)
+        self.functions.current_function().remove_n_local_vars(scope_len)
+        if self.scope_structure.current_scope.scope_type != FUNCTION:
+            output += f"\t\tADD R7, {make_frisc_hex(scope_len * 4)}, R7\n"
         self.scope_structure.remove_scope()
         return output
         
@@ -1303,7 +1308,7 @@ class Node():
             # if is_niz_x(self.children[0].tip):
             #     if is_const_x(remove_niz_from_niz_x(self.children[0].tip)):
             #         return self.error()
-            if self.scope_structure.current_scope != GLOBAL:
+            if not self.scope_structure.current_scope.is_global():
                 self.functions.current_function().declared()
         elif self.right_side(IZRAVNI_DEKLARATOR, OP_PRIDRUZI, INICIJALIZATOR):
             if self.scope_structure.current_scope.is_global():

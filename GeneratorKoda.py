@@ -8,15 +8,17 @@ from global_variables import GlobalVariables
 import sys
 
 
-INPUT_FILE_PATH = "./testovi/05_plus/test.in"
+INPUT_FILE_PATH = "./testovi/15_scope3/test.in"
 # INPUT_FILE_PATH = "/home/filip/Work/FER/5_semestar/ppj/labosi/sem/temp.txt"
 
 
 def main():
-    # with open(INPUT_FILE_PATH, 'r') as file:
-        # input = [line.rstrip() for line in file.readlines()]
-    input = [line.rstrip() for line in sys.stdin.readlines()]
-    # make the generative tree from the input
+    read_from_stdin = 1
+    if read_from_stdin:
+        input = [line.rstrip() for line in sys.stdin.readlines()]
+    else:
+        with open(INPUT_FILE_PATH, 'r') as file:
+            input = [line.rstrip() for line in file.readlines()]
     functions = Functions()
     global_variables = GlobalVariables()
     global_scope = Scope(None, GLOBAL)
