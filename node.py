@@ -998,14 +998,21 @@ class Node():
     # <naredba_grananja>
     def naredba_grananja(self):
         if self.right_side(KR_IF, L_ZAGRADA, IZRAZ, D_ZAGRADA, NAREDBA):
-            error = self.children[2].generate_output()
-            if error:
-                return error
-            if not implicit_cast(self.children[2].tip, INT):
-                return self.error()
-            error = self.children[4].generate_output()
-            if error:
-                return error
+            count = UniqueCounter.get_unique()
+            output = self.children[2].generate_output()
+            output += f"\t\tCMP R6, 1\n"
+            output += f"\t\tJP_EQ THEN_{count}\n"
+            output += f"\t\tJP_NE END_{count}\n"
+            output += f"THEN_{count}\n"
+            # if error:
+            #     return error
+            # if not implicit_cast(self.children[2].tip, INT):
+            #     return self.error()
+            output += self.children[4].generate_output()
+            output += f"\t\tJP END_{count}\n"
+            output += f"END_{count}\n"
+            # if error:
+            #     return error
         elif self.right_side(KR_IF, L_ZAGRADA, IZRAZ, D_ZAGRADA, NAREDBA, KR_ELSE, NAREDBA):
             error = self.children[2].generate_output()
             if error:
@@ -1018,7 +1025,7 @@ class Node():
             error = self.children[6].generate_output()
             if error:
                 return error
-        return ""
+        return output
 
     # <naredba_petlje>
     def naredba_petlje(self):

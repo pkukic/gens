@@ -8,14 +8,14 @@ from global_variables import GlobalVariables
 import sys
 
 
-INPUT_FILE_PATH = "/home/patrik/Drive/Current/Faks/Nastava/3_godina/PPJ/Projekti/gens/testovi/14_25_niz3/test.in"
+INPUT_FILE_PATH = "/home/patrik/Drive/Current/Faks/Nastava/3_godina/PPJ/Projekti/gens/testovi/19_if1/test.in"
 # INPUT_FILE_PATH = "/home/filip/Work/FER/5_semestar/ppj/labosi/sem/temp.txt"
 
 
 def main():
-    with open(INPUT_FILE_PATH, 'r') as file:
-        input = [line.rstrip() for line in file.readlines()]
-    # input = [line.rstrip() for line in sys.stdin.readlines()]
+    # with open(INPUT_FILE_PATH, 'r') as file:
+        # input = [line.rstrip() for line in file.readlines()]
+    input = [line.rstrip() for line in sys.stdin.readlines()]
     # make the generative tree from the input
     functions = Functions()
     global_variables = GlobalVariables()

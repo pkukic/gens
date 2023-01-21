@@ -3,40 +3,33 @@
 		HALT
 
 F_MAIN
-		LOAD R6, (K_5)
-		STORE R6, (G_A)
-
-		LOAD R6, (K_6)
-		STORE R6, (G_A)
-
-		LOAD R6, (K_7)
-		STORE R6, (G_A)
-
-		LOAD R6, (G_A)
-		STORE R6, (G_9)
-		LOAD R6, (G_A)
-		STORE R6, (G_10)
-		LOAD R1, (G_9)
-		LOAD R2, (G_10)
-		ADD R1, R2, R6
-		STORE R6, (G_8)
-		LOAD R6, (G_A)
-		STORE R6, (G_11)
-		LOAD R1, (G_8)
-		LOAD R2, (G_11)
+<primarni_izraz> ::= NIZ_ZNAKOVA(2,"dubravko")
+		PUSH R6
+		LOAD R6, (K_15)
+		STORE R6, (G_14)
+		LOAD R6, (K_17)
+		STORE R6, (G_16)
+		LOAD R1, (G_14)
+		LOAD R2, (G_16)
 		ADD R1, R2, R6
 		ADD R7, 0, R7
 		RET
 
-a_0		DW %D 0
-a_1		DW %D 0
-a_2		DW %D 0
-a_3		DW %D 0
-a_4		DW %D 0
-K_5		DW %D 0
-K_6		DW %D 123
-K_7		DW %D 1
-G_8		DW 0
-G_9		DW 0
-G_10		DW 0
-G_11		DW 0
+polje_0		DW %D 0
+polje_1		DW %D 0
+polje_2		DW %D 0
+polje_3		DW %D 0
+polje_4		DW %D 0
+polje_5		DW %D 0
+polje_6		DW %D 0
+polje_7		DW %D 0
+polje_8		DW %D 0
+polje_9		DW %D 0
+polje_10		DW %D 0
+polje_11		DW %D 0
+polje_12		DW %D 0
+polje_13		DW %D 0
+G_14		DW 0
+K_15		DW %D 2
+G_16		DW 0
+K_17		DW %D 8
