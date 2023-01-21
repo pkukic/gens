@@ -773,7 +773,7 @@ class Node():
             output += "\t\tMOVE R6, R1\n"
             output += self.children[2].generate_output()
             output += "\t\tMOVE R6, R2\n"
-            output += "\t\tOR R1, R2, R6\n"
+            output += "\t\tXOR R1, R2, R6\n"
 
             # error = self.children[0].generate_output()
             # if error:
