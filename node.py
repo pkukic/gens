@@ -1282,6 +1282,7 @@ class Node():
                 else:
                     type_to_save = "DH"
                 self.global_variables.add_line(name + tabs + type_to_save + " " + value)
+                output = ""
             else:
                 name = self.children[0].generate_output(ntip=current_ntip)
                 output = self.children[2].generate_output()
