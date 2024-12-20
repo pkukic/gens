@@ -4,66 +4,66 @@
 
 F_MAIN
 		LOAD R6, (K_0)
-		XOR R6, -1, R6
-		ADD R6, 1, R6
-		MOVE R6, R1
+		PUSH R6
 		LOAD R6, (K_1)
-		MOVE R6, R2
-		PUSH R1
-		PUSH R2
-		CALL MODULO
-		ADD R7, 8, R7
 		PUSH R6
-		LOAD R6, (K_2)
-		XOR R6, -1, R6
-		ADD R6, 1, R6
-		MOVE R6, R1
-		LOAD R6, (K_3)
-		XOR R6, -1, R6
-		ADD R6, 1, R6
-		MOVE R6, R2
-		PUSH R1
-		PUSH R2
-		CALL MODULO
-		ADD R7, 8, R7
-		PUSH R6
-		LOAD R6, (K_4)
-		MOVE R6, R1
-		LOAD R6, (K_5)
-		XOR R6, -1, R6
-		ADD R6, 1, R6
-		MOVE R6, R2
-		PUSH R1
-		PUSH R2
-		CALL MODULO
-		ADD R7, 8, R7
 		PUSH R6
 		LOAD R6, (R7+8)
-		STORE R6, (G_7)
+		STORE R6, (G_2)
 		LOAD R6, (R7+4)
-		STORE R6, (G_8)
-		LOAD R1, (G_7)
-		LOAD R2, (G_8)
+		STORE R6, (G_3)
+		LOAD R1, (G_2)
+		LOAD R2, (G_3)
 		ADD R1, R2, R6
+		STORE R6, (R7+4)
+
+		LOAD R6, (R7+4)
+		MOVE R6, R1
+		MOVE 1, R2
+		ADD R1, R2, R3
+		STORE R3, (R7+4)
+
+		LOAD R6, (R7+8)
+		PUSH R6
+		CALL  F_FJA
+		ADD R7, %D 4, R7
+		LOAD R6, (R7+8)
+		PUSH R6
+		CALL  F_FJA
+		ADD R7, %D 4, R7
+		STORE R6, (G_4)
+		LOAD R6, (R7+4)
+		PUSH R6
+		CALL  F_FJA
+		ADD R7, %D 4, R7
+		STORE R6, (G_5)
+		LOAD R1, (G_4)
+		LOAD R2, (G_5)
+		ADD R1, R2, R6
+		ADD R7, 8, R7
+		RET
+
+
+F_FJA
+		LOAD R6, (R7+4)
 		STORE R6, (G_6)
-		LOAD R6, (R7+0)
-		STORE R6, (G_9)
+		LOAD R6, (K_8)
+		STORE R6, (G_7)
 		LOAD R1, (G_6)
-		LOAD R2, (G_9)
-		ADD R1, R2, R6
-		ADD R7, 0C, R7
+		LOAD R2, (G_7)
+		SUB R1, R2, R6
+		ADD R7, 0, R7
 		RET
 
 K_0		DW %D 7
-K_1		DW %D 3
-K_2		DW %D 3
-K_3		DW %D 3
-K_4		DW %D 12
-K_5		DW %D 5
+K_1		DW %D 9
+G_2		DW 0
+G_3		DW 0
+G_4		DW 0
+G_5		DW 0
 G_6		DW 0
 G_7		DW 0
-G_8		DW 0
-G_9		DW 0
+K_8		DW %D 1
 PUTA
 		LOAD R1, (R7+8)
 		LOAD R2, (R7+4)
