@@ -238,12 +238,6 @@ class Node():
     # <primarni_izraz>
     def primarni_izraz(self):
         if self.right_side(IDN):
-            # TODO
-            # if self.is_argument():
-            #     ...
-
-            # if not self.scope_structure.idn_name_in_scope(self.children[0].lex):
-            #     return self.error()
 
             self.tip = self.scope_structure.type_of_idn_in_scope(self.children[0].lex)
             self.l_izraz = self.scope_structure.l_izraz_of_idn_in_scope(self.children[0].lex)
@@ -286,7 +280,7 @@ class Node():
 
         elif self.right_side(NIZ_ZNAKOVA):
             if not check_string(self.children[0].lex):
-                return self.error()
+                return "|" + self.children[0].lex + "|" + self.error()
             self.tip = NIZ_CONST_CHAR
             self.l_izraz = 0
 
@@ -1022,12 +1016,6 @@ class Node():
 
     # <slozena_naredba>
     def slozena_naredba(self, scope=None, lista_identifikatora=None, lista_tipova=None):
-        # u oba slucaja ce se tu stvarati prazan scope
-        # s tim da ce se puniti sa deklaracijama kad dodje do LISTA_DEKLARACIJA
-        # ako se provjerava tijelo funkcije, onda se parametri funkcije
-        # moraju spremiti u scope tijela prvo.
-
-        # TODO vjv stack_position treba promjeniti ako nije rijec o fji
         child_scope = Scope(self.scope_structure.current_scope, scope, stack_position=0)
         self.scope_structure.add_child_scope(child_scope)
         if lista_identifikatora is not None and lista_tipova is not None:

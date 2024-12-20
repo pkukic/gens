@@ -23,6 +23,7 @@ def main():
     global_scope = Scope(None, GLOBAL)
     scope_structure = ScopeStructure(global_scope)
     gen_tree = GenerativeTree(input, scope_structure, functions, global_variables)
+    gen_tree.print()
     # error = gen_tree.root_node.provjeri()
     # if error:
     #     print(error)

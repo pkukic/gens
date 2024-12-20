@@ -3,36 +3,67 @@
 		HALT
 
 F_MAIN
-<primarni_izraz> ::= NIZ_ZNAKOVA(2,"dubravko")
+		LOAD R6, (K_0)
+		XOR R6, -1, R6
+		ADD R6, 1, R6
+		MOVE R6, R1
+		LOAD R6, (K_1)
+		MOVE R6, R2
+		PUSH R1
+		PUSH R2
+		CALL MODULO
+		ADD R7, 8, R7
 		PUSH R6
-		LOAD R6, (K_15)
-		STORE R6, (G_14)
-		LOAD R6, (K_17)
-		STORE R6, (G_16)
-		LOAD R1, (G_14)
-		LOAD R2, (G_16)
+		LOAD R6, (K_2)
+		XOR R6, -1, R6
+		ADD R6, 1, R6
+		MOVE R6, R1
+		LOAD R6, (K_3)
+		XOR R6, -1, R6
+		ADD R6, 1, R6
+		MOVE R6, R2
+		PUSH R1
+		PUSH R2
+		CALL MODULO
+		ADD R7, 8, R7
+		PUSH R6
+		LOAD R6, (K_4)
+		MOVE R6, R1
+		LOAD R6, (K_5)
+		XOR R6, -1, R6
+		ADD R6, 1, R6
+		MOVE R6, R2
+		PUSH R1
+		PUSH R2
+		CALL MODULO
+		ADD R7, 8, R7
+		PUSH R6
+		LOAD R6, (R7+8)
+		STORE R6, (G_7)
+		LOAD R6, (R7+4)
+		STORE R6, (G_8)
+		LOAD R1, (G_7)
+		LOAD R2, (G_8)
 		ADD R1, R2, R6
-		ADD R7, 0, R7
+		STORE R6, (G_6)
+		LOAD R6, (R7+0)
+		STORE R6, (G_9)
+		LOAD R1, (G_6)
+		LOAD R2, (G_9)
+		ADD R1, R2, R6
+		ADD R7, 0C, R7
 		RET
 
-polje_0		DW %D 0
-polje_1		DW %D 0
-polje_2		DW %D 0
-polje_3		DW %D 0
-polje_4		DW %D 0
-polje_5		DW %D 0
-polje_6		DW %D 0
-polje_7		DW %D 0
-polje_8		DW %D 0
-polje_9		DW %D 0
-polje_10		DW %D 0
-polje_11		DW %D 0
-polje_12		DW %D 0
-polje_13		DW %D 0
-G_14		DW 0
-K_15		DW %D 2
-G_16		DW 0
-K_17		DW %D 8
+K_0		DW %D 7
+K_1		DW %D 3
+K_2		DW %D 3
+K_3		DW %D 3
+K_4		DW %D 12
+K_5		DW %D 5
+G_6		DW 0
+G_7		DW 0
+G_8		DW 0
+G_9		DW 0
 PUTA
 		LOAD R1, (R7+8)
 		LOAD R2, (R7+4)

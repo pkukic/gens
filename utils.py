@@ -1,49 +1,42 @@
 from consts import *
 
 def check_char(char: str):
-    if len(char) == 4:
-        valid = False
-        if char == '\\t':
-            valid = True
-        elif char == '\\n':
-            valid = True
-        elif char == '\\0':
-            valid = True
-        elif char == "\\'":
-            valid = True
-        elif char == '\\"':
-            valid = True
-        elif char == '\\\\':
-            valid = True
-    elif len(char) == 3:
-        valid = True
+    valid_escapes = {'\\t', '\\n', '\\0', "\\'", '\\"', '\\\\'}
+    if len(char) == 2 and char[0] == '\\':
+        if char in valid_escapes:
+            return True
+        else:
+            return False
+    elif len(char) == 1 and char not in {'\\', '"'}:
+        return True
     else:
-        valid = False
-    return valid
+        return False
 
 
 def check_string(string: str):
-    # begin and end with "
+    # The string must begin and end with a double quote
     if len(string) < 2:
         return False
     if string[0] != '"' or string[-1] != '"':
         return False
-    
-    i = 0
-    while i < len(string):
-        # if string is of format "...\"
-        if string[i] == "\\" and i == len(string) - 2:
-            return False
-        if string[i] == "\\":
+
+    i = 1  # Start after the opening quote
+    while i < len(string) - 1:  # Stop before the closing quote
+        if string[i] == '\\':
+            # Check if there's at least one more character for the escape sequence
+            if i + 1 >= len(string) - 1:
+                return False
+            # Validate the escape sequence
             if not check_char(string[i:i+2]):
                 return False
-            i += 1
+            i += 2  # Move past the escape sequence
         else:
+            # Validate a regular character
             if not check_char(string[i]):
                 return False
-        i += 1
-    
+            i += 1  # Move to the next character
     return True
+
 
 
 def implicit_cast(start, target):

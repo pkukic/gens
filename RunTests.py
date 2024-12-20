@@ -46,7 +46,7 @@ for dir in subdirs:
         temp_file = open(temp_file_name, 'w+')
         # frisc_file = open(frisc_file_name, "w+")
 
-        subprocess.run([f"cat {in_file_name} | python3 GeneratorKoda.py"], shell=True, stdout=subprocess.DEVNULL)
+        subprocess.run([f"cat '{in_file_name}' | python3 GeneratorKoda.py"], shell=True, stdout=subprocess.DEVNULL)
         subprocess.run([f"cat a.frisc | node main.js"], shell=True, stdout=temp_file, stderr=subprocess.DEVNULL)
 
         with open(temp_file_name, 'r') as output:
